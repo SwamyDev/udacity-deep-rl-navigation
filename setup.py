@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 from setuptools import find_packages, setup
@@ -21,7 +20,10 @@ setup(
     packages=find_packages(include=['p1_navigation', 'p1_navigation.*']),
     include_package_data=True,
     zip_safe=False,
-    install_requires=['udacity-unityagents'],
+    install_requires=['udacity-unityagents', 'click'],
     extras_require={"test": ['pytest', 'pytest-cov', 'gym-quickcheck']},
-    python_requires='>=3.6,<3.8'
+    python_requires='>=3.6,<3.8',
+    entry_points={
+        'console_scripts': ['p1_navigation = p1_navigation:cli']
+    }
 )
