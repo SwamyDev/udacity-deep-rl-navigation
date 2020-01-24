@@ -1,5 +1,7 @@
 .PHONY: help meta setup clean test
 
+PIP_OPTIONS ?=
+
 .DEFAULT: help
 help:
 	@echo "make meta"
@@ -34,7 +36,7 @@ venv/done: resources/unity-mlagent/dist
 	test -d venv || python3.7 -m venv venv
 	. venv/bin/activate; pip install --upgrade pip
 	. venv/bin/activate; pip install --upgrade setuptools
-	. venv/bin/activate; pip install --find-links=resources/unity-mlagent/dist .
+	. venv/bin/activate; pip install --find-links=resources/unity-mlagent/dist $(PIP_OPTIONS) .
 	touch venv/done
 
 venv: venv/done
@@ -42,7 +44,7 @@ venv: venv/done
 setup: meta clean | venv
 
 venv/test_done: | setup
-	. venv/bin/activate; pip install .[test]
+	. venv/bin/activate; pip install --find-links=resources/unity-mlagent/dist $(PIP_OPTIONS) .[test]
 	touch venv/test_done
 
 test: | venv/test_done
