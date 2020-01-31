@@ -25,6 +25,11 @@ clean:
 	rm --force --recursive build/
 	rm --force --recursive dist/
 	rm --force --recursive *.egg-info
+	rm --force resources/unity-mlagent/.coverage
+	rm --force --recursive resources/unity-mlagent/.pytest_cache
+	rm --force --recursive resources/unity-mlagent/build/
+	rm --force --recursive resources/unity-mlagent/dist/
+	rm --force --recursive resources/unity-mlagent/*.egg-info
 
 resources/unity-mlagent/dist:
 	test -d resources/unity-mlagent/venv || python3.7 -m venv resources/unity-mlagent/venv
