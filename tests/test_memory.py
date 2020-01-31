@@ -1,26 +1,6 @@
-import random
-
 import pytest
 
-
-class Memory:
-    def __init__(self, batch_size, seed=None):
-        self._record = list()
-        self._batch_size = batch_size
-        if seed is not None:
-            random.seed(seed)
-
-    def record(self, experience):
-        self._record.append(experience)
-
-    def sample(self):
-        if len(self) < self._batch_size:
-            return []
-
-        return random.sample(self._record, k=self._batch_size)
-
-    def __len__(self):
-        return len(self._record)
+from p1_navigation.memory import Memory
 
 
 class ExperienceStub:
@@ -39,9 +19,9 @@ class ExperienceStub:
 
 @pytest.fixture
 def make_memory():
-    def factory(batch_size=64, record_size=0, seed=None):
-        m = Memory(batch_size, seed)
-        for index in range(record_size):
+    def factory(batch_size=64, record_size=10000, num_records=0, seed=None):
+        m = Memory(batch_size, record_size, seed)
+        for index in range(num_records):
             m.record(ExperienceStub(index))
         return m
 
@@ -70,15 +50,19 @@ def test_recording_experience_increases_length(memory):
 
 @pytest.mark.parametrize('batch_size', (1, 3))
 def test_sampling_memory_returns_list_of_experiences_if_enough_records_to_fill_a_batch(make_memory, batch_size):
-    memory = make_memory(batch_size, record_size=batch_size)
+    memory = make_memory(batch_size, num_records=batch_size)
     assert sorted(memory.sample()) == sorted([ExperienceStub(index) for index in range(batch_size)])
 
 
 def test_sampling_memory_returns_empty_list_if_not_enough_records_to_fill_a_batch(make_memory):
-    memory = make_memory(batch_size=2, record_size=1)
+    memory = make_memory(batch_size=2, num_records=1)
     assert memory.sample() == []
 
 
 def test_sample_randomly_from_record_if_record_exceeds_batch_size(make_memory):
-    assert make_memory(batch_size=2, record_size=10, seed=17).sample() != \
-           make_memory(batch_size=2, record_size=10, seed=42).sample()
+    assert make_memory(batch_size=2, num_records=10, seed=17).sample() != \
+           make_memory(batch_size=2, num_records=10, seed=42).sample()
+
+
+def test_record_has_fixed_length(make_memory):
+    assert len(make_memory(batch_size=1, record_size=3, num_records=10)) == 3
