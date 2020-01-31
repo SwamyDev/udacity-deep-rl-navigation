@@ -14,7 +14,7 @@ def cli(ctx, environment):
     CLI to train and run the navigation agent of the udacity project
     """
     ctx.obj = dict(
-        env_file=environment or (Path(__file__).absolute().parent / "../resources/Banana_Linux/Banana.x86_64")
+        env_file=environment or (Path(__file__).absolute().parent.parent / "resources/Banana_Linux/Banana.x86_64")
     )
 
 
