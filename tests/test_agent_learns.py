@@ -39,12 +39,16 @@ def random_walk():
     return RandomWalkSession()
 
 
-def test_untrained_agent_fails_at_random_walk(random_walk):
+@pytest.mark.stochastic(sample_size=10)
+def test_untrained_agent_fails_at_random_walk(random_walk, stochastic_run):
     agent = DQNAgent(random_walk.observation_space, random_walk.action_space)
-    assert random_walk.test(agent) <= (random_walk.reward_range[0] + random_walk.reward_range[1]) / 2
+    stochastic_run.record(random_walk.test(agent))
+    assert stochastic_run.average() <= (random_walk.reward_range[0] + random_walk.reward_range[1]) / 2
 
 
-def test_agent_learns_random_walk(random_walk):
+@pytest.mark.stochastic(sample_size=10)
+def test_agent_learns_random_walk(random_walk, stochastic_run):
     agent = DQNAgent(random_walk.observation_space, random_walk.action_space)
     random_walk.train(agent)
-    assert random_walk.test(agent) == approx(random_walk.reward_range[1])
+    stochastic_run.record(random_walk.test(agent))
+    assert stochastic_run.average() == approx(random_walk.reward_range[1])
