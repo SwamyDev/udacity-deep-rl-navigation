@@ -1,1 +1,2 @@
+[![Build Status](https://travis-ci.com/SwamyDev/udacity-deep-rl-navigation.svg?branch=master)](https://travis-ci.com/SwamyDev/udacity-deep-rl-navigation) [![Coverage Status](https://coveralls.io/repos/github/SwamyDev/udacity-deep-rl-navigation/badge.svg?branch=master)](https://coveralls.io/github/SwamyDev/udacity-deep-rl-navigation?branch=master)
 # Udacity Navigation Project
