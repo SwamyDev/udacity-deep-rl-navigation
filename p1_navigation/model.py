@@ -67,12 +67,12 @@ class QModel:
         return qs
 
     def fit(self, observations, actions, targets):
-        obs = torch.from_numpy(np.array(observations, dtype=np.float32)).to(self._device)
-        acts = torch.from_numpy(np.array(actions, dtype=np.int)).to(self._device)
+        obs = torch.from_numpy(np.vstack(observations)).float().to(self._device)
+        acts = torch.from_numpy(np.vstack(actions)).long().to(self._device)
         est = self._ann(obs)
         current = est.gather(1, acts)
 
-        believe = torch.from_numpy(np.array(targets, dtype=np.float32)).to(self._device)
+        believe = torch.from_numpy(np.vstack(targets)).float().to(self._device)
         loss = F.mse_loss(current, believe)
         self._optimizer.zero_grad()
         loss.backward()
