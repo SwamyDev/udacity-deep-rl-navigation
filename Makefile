@@ -1,4 +1,4 @@
-.PHONY: help meta setup clean test
+.PHONY: help meta setup clean test coverage
 
 PIP_OPTIONS ?=
 
@@ -12,6 +12,8 @@ help:
 	@echo "	clean all python build/compilation files and directories"
 	@echo "make test"
 	@echo "	run all tests"
+	@echo "make coverage"
+	@echo " run all tests and produce coverage report"
 
 meta:
 	python meta.py `git describe --tags --abbrev=0`
@@ -28,30 +30,29 @@ clean:
 	rm --force resources/unity-mlagent/.coverage
 	rm --force --recursive resources/unity-mlagent/.pytest_cache
 	rm --force --recursive resources/unity-mlagent/build/
-	rm --force --recursive resources/unity-mlagent/dist/
 	rm --force --recursive resources/unity-mlagent/*.egg-info
 
-resources/unity-mlagent/dist:
+resources/unity-mlagent/dist/done:
 	test -d resources/unity-mlagent/venv || python3.7 -m venv resources/unity-mlagent/venv
-	cd resources/unity-mlagent; ls 
 	cd resources/unity-mlagent; . venv/bin/activate; pip install --upgrade pip setuptools wheel
 	cd resources/unity-mlagent; . venv/bin/activate;  python setup.py sdist bdist_wheel
+	touch resources/unity-mlagent/dist/done
 
-venv/done: resources/unity-mlagent/dist
+venv/done: resources/unity-mlagent/dist | meta clean
 	test -d venv || python3.7 -m venv venv
 	. venv/bin/activate; pip install --upgrade pip
 	. venv/bin/activate; pip install --upgrade setuptools
 	. venv/bin/activate; pip install --find-links=resources/unity-mlagent/dist $(PIP_OPTIONS) .
 	touch venv/done
 
-venv: venv/done
+setup: venv/done
 
-setup: meta clean | venv
-
-venv/test_done: | setup
+venv/test_done: venv/done
 	. venv/bin/activate; pip install --find-links=resources/unity-mlagent/dist $(PIP_OPTIONS) .[test]
 	touch venv/test_done
 
-test: | venv/test_done
+test: venv/test_done
 	. venv/bin/activate; pytest --verbose --color=yes tests 
 
+coverage: venv/test_done
+	. venv/bin/activate; pytest --cov=p1_navigation --cov-report term-missing tests
