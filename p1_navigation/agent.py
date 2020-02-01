@@ -44,4 +44,4 @@ class DQNAgent:
         q_next = self._target_model.estimate(next_obs)
         q_target = rewards + (self._gamma * np.max(q_next, axis=1) * (1 - dones))
         self._local_model.fit(obs, actions, q_target)
-        self._target_model.soft_update(self._local_model, self._tau)
+        self._target_model.linear_interpolate(self._local_model, self._tau)
