@@ -35,7 +35,8 @@ class DQNAgent:
         self._steps = 0
 
     def act(self, observation):
-        return self._action_space.sample()
+        q_values = self._target_model.estimate([observation]).squeeze()
+        return np.argmax(q_values)
 
     def step(self, obs, action, reward, next_obs, done):
         if not isinstance(action, (collections.Sequence, np.ndarray)):
