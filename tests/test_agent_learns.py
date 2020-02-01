@@ -40,11 +40,11 @@ def random_walk():
 
 
 def test_untrained_agent_fails_at_random_walk(random_walk):
-    agent = DQNAgent(random_walk.action_space)
+    agent = DQNAgent(random_walk.observation_space, random_walk.action_space)
     assert random_walk.test(agent) <= (random_walk.reward_range[0] + random_walk.reward_range[1]) / 2
 
 
 def test_agent_learns_random_walk(random_walk):
-    agent = DQNAgent(random_walk.action_space)
+    agent = DQNAgent(random_walk.observation_space, random_walk.action_space)
     random_walk.train(agent)
     assert random_walk.test(agent) == approx(random_walk.reward_range[1])

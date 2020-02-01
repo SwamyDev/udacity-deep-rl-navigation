@@ -1,6 +1,8 @@
 import random
 from collections import deque
 
+import numpy as np
+
 
 class Memory:
     def __init__(self, batch_size, record_size, seed=None):
@@ -25,8 +27,15 @@ class Memory:
 
         sample = random.sample(self._record, k=self._batch_size)
         if len(sample[0]) > 1:
-            return tuple(zip(*sample))
-        return sample
+            return self._cast_to_ndarray_tuple(list(zip(*sample)))
+
+        return np.array(sample)
+
+    @staticmethod
+    def _cast_to_ndarray_tuple(attributes):
+        for i in range(len(attributes)):
+            attributes[i] = np.array(attributes[i])
+        return tuple(attributes)
 
     def is_unfilled(self):
         return len(self) < self._batch_size

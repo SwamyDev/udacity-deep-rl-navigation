@@ -17,6 +17,7 @@ def _with_mem_defaults(cfg):
 
 
 def _with_model_default(cfg):
+    cfg = _with_default(cfg, 'layers', [{'activation': 'relu', 'size': 64}])
     return cfg
 
 
@@ -24,8 +25,9 @@ class DQNAgent:
     def __init__(self, observation_space, action_space, **kwargs):
         self._action_space = action_space
         self._memory = Memory(**_with_mem_defaults(kwargs))
-        self._target_model = QModel(observation_space, action_space, **_with_model_default(kwargs.get('model', dict())))
-        self._local_model = QModel(observation_space, action_space, **_with_model_default(kwargs.get('model', dict())))
+        obs_size = observation_space.n if hasattr(observation_space, 'n') else observation_space.shape[0]
+        self._target_model = QModel(obs_size, action_space.n, **_with_model_default(kwargs.get('model', dict())))
+        self._local_model = QModel(obs_size, action_space.n, **_with_model_default(kwargs.get('model', dict())))
         self._gamma = kwargs.get('gamma', 0.99)
         self._tau = kwargs.get('tau', 0.99)
         self._steps = 0
@@ -35,6 +37,7 @@ class DQNAgent:
 
     def step(self, obs, action, reward, next_obs, done):
         self._memory.record(obs=obs, action=action, reward=reward, next_obs=next_obs, done=done)
+        self._steps = 1
 
     def train(self):
         if self._memory.is_unfilled():
