@@ -38,7 +38,7 @@ resources/unity-mlagent/dist:
 	cd resources/unity-mlagent; . venv/bin/activate; pip install --upgrade pip setuptools wheel
 	cd resources/unity-mlagent; . venv/bin/activate;  python setup.py sdist bdist_wheel
 
-venv/done: resources/unity-mlagent/dist | meta clean
+venv/done: resources/unity-mlagent/dist | clean
 	test -d venv || ${PYTHON} -m venv venv
 	. venv/bin/activate; pip install --upgrade pip
 	. venv/bin/activate; pip install --upgrade setuptools
