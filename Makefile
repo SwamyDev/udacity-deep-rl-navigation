@@ -1,6 +1,7 @@
 .PHONY: help meta setup clean test coverage
 
 PIP_OPTIONS ?=
+PYTHON ?= python3
 
 .DEFAULT: help
 help:
@@ -33,13 +34,13 @@ clean:
 	rm --force --recursive resources/unity-mlagent/*.egg-info
 
 resources/unity-mlagent/dist/done:
-	test -d resources/unity-mlagent/venv || python3.7 -m venv resources/unity-mlagent/venv
+	test -d resources/unity-mlagent/venv || ${PYTHON} -m venv resources/unity-mlagent/venv
 	cd resources/unity-mlagent; . venv/bin/activate; pip install --upgrade pip setuptools wheel
 	cd resources/unity-mlagent; . venv/bin/activate;  python setup.py sdist bdist_wheel
 	touch resources/unity-mlagent/dist/done
 
 venv/done: resources/unity-mlagent/dist | meta clean
-	test -d venv || python3.7 -m venv venv
+	test -d venv || ${PYTHON} -m venv venv
 	. venv/bin/activate; pip install --upgrade pip
 	. venv/bin/activate; pip install --upgrade setuptools
 	. venv/bin/activate; pip install --find-links=resources/unity-mlagent/dist $(PIP_OPTIONS) .
