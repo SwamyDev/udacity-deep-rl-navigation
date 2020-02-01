@@ -1,7 +1,9 @@
+import collections
+
 import numpy as np
 
 from p1_navigation.memory import Memory
-from tests.test_models import QModel
+from p1_navigation.model import QModel
 
 
 def _with_default(cfg, key, default):
@@ -36,6 +38,9 @@ class DQNAgent:
         return self._action_space.sample()
 
     def step(self, obs, action, reward, next_obs, done):
+        if not isinstance(action, (collections.Sequence, np.ndarray)):
+            action = [action]
+
         self._memory.record(obs=obs, action=action, reward=reward, next_obs=next_obs, done=done)
         self._steps = 1
 
