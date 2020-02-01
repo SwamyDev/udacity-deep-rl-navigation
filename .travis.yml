@@ -2,6 +2,7 @@ language: python
 python:
   - '3.7'
 script:
+  - pip install coverage==4.5.4
   - pip install python-coveralls
   - make coverage
 after_success:
