@@ -51,4 +51,12 @@ def test_agent_learns_random_walk(random_walk, stochastic_run):
     agent = DQNAgent(random_walk.observation_space, random_walk.action_space)
     random_walk.train(agent)
     stochastic_run.record(random_walk.test(agent))
-    assert stochastic_run.average() == approx(random_walk.reward_range[1])
+    assert stochastic_run.average() == approx(random_walk.reward_range[1], abs=0.1)
+
+
+@pytest.mark.stochastic(sample_size=10)
+def test_agent_with_epsilon_one_is_as_bad_as_random(random_walk, stochastic_run):
+    agent = DQNAgent(random_walk.observation_space, random_walk.action_space, epsilon_fn=lambda: 1)
+    random_walk.train(agent)
+    stochastic_run.record(random_walk.test(agent))
+    assert stochastic_run.average() <= (random_walk.reward_range[0] + random_walk.reward_range[1]) / 2
