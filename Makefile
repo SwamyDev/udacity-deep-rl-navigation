@@ -58,4 +58,4 @@ test: venv/test_done
 	. venv/bin/activate; pytest --verbose --color=yes tests 
 
 coverage: venv/test_done
-	. venv/bin/activate; pytest --cov=p1_navigation --cov-report term-missing tests
+	. venv/bin/activate; pytest --cov=p1_navigation --cov-report term-missing --run-unity tests
