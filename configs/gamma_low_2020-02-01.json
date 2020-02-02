@@ -10,10 +10,8 @@
         "activation": "relu",
         "size": 64
       }
-    ],
-    "device": "cpu",
-    "lr": 0.0005
+    ]
   },
-  "gamma": 0.99,
+  "gamma": 0.9,
   "tau": 0.001
 }

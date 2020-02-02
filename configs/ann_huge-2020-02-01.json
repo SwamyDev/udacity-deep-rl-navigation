@@ -8,11 +8,14 @@
     "layers": [
       {
         "activation": "relu",
-        "size": 64
+        "size": 512
+      },
+      {
+        "activation": "relu",
+        "size": 512
       }
     ],
-    "device": "cpu",
-    "lr": 0.0005
+    "device": "cuda:0"
   },
   "gamma": 0.99,
   "tau": 0.001

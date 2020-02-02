@@ -9,6 +9,10 @@
       {
         "activation": "relu",
         "size": 64
+      },
+      {
+        "activation": "relu",
+        "size": 64
       }
     ],
     "device": "cpu",
