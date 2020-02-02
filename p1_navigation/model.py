@@ -24,6 +24,13 @@ class FeedForwardNetwork(nn.Module):
             torch.manual_seed(seed)
 
         self._layers = self._create_layers(input_size, layers)
+        self._print_architecture()
+
+    def _print_architecture(self):
+        print("FeedForwardNetwork architecture:")
+        for activation, linear in self._layers:
+            print(f"\t{activation.__name__}({linear.in_features}x{linear.out_features})")
+        print("\n")
 
     def _create_layers(self, in_size, layer_cfg):
         layers = list()
@@ -55,15 +62,20 @@ def _eval_scope(ann):
 
 class QModel:
     def __init__(self, observation_size, action_size, layers, lr=5e-4, device='cpu', seed=None):
+        layers = list(layers)
         layers.append(dict(activation='identity', size=action_size))
-        self._ann = FeedForwardNetwork(observation_size, layers, seed)
-        self._optimizer = optim.Adam(self._ann.parameters(), lr=lr)
         self._device = device
+        self._ann = FeedForwardNetwork(observation_size, layers, seed).to(self._device)
+        self._optimizer = optim.Adam(self._ann.parameters(), lr=lr)
+
+        print(f"QModel configuration:\n"
+              f"\tLearning rate:\t{lr}\n"
+              f"\tDevice:\t{device}\n")
 
     def estimate(self, observations):
         obs = torch.from_numpy(np.array(observations, dtype=np.float32)).to(self._device)
         with torch.no_grad(), _eval_scope(self._ann):
-            qs = self._ann(obs).detach().numpy()
+            qs = self._ann(obs).cpu().detach().numpy()
         return qs
 
     def fit(self, observations, actions, targets):

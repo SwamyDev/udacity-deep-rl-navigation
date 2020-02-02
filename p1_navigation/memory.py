@@ -12,6 +12,13 @@ class Memory:
         if seed is not None:
             random.seed(seed)
 
+        self._print_config()
+
+    def _print_config(self):
+        print(f"Memory configuration:\n"
+              f"\tRecord size:\t{self._record.maxlen}\n"
+              f"\tBatch size:\t{self._batch_size}\n")
+
     def record(self, **kwargs):
         keys = tuple(kwargs.keys())
         if self._keys is None:

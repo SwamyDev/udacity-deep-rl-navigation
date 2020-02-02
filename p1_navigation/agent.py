@@ -40,23 +40,29 @@ class DefaultEpsilonCalc:
 
 
 class DQNAgent:
-    def __init__(self, observation_space, action_space, **kwargs):
-        self._action_space = action_space
+    def __init__(self, observation_size, action_size, **kwargs):
         mem_cfg = _with_mem_defaults(kwargs)
+        self._action_size = action_size
         self._memory = Memory(**_only_memory_args(mem_cfg))
-        obs_size = observation_space.n if hasattr(observation_space, 'n') else observation_space.shape[0]
-        self._target_model = QModel(obs_size, action_space.n, **_with_model_default(kwargs.get('model', dict())))
-        self._local_model = QModel(obs_size, action_space.n, **_with_model_default(kwargs.get('model', dict())))
-        self._epsilon_fn = kwargs.get('epsilon_fn', DefaultEpsilonCalc(10, 0.01, 0.995))
+        self._target_model = QModel(observation_size, action_size, **_with_model_default(kwargs.get('model', dict())))
+        self._local_model = QModel(observation_size, action_size, **_with_model_default(kwargs.get('model', dict())))
+        self._epsilon_fn = kwargs.get('epsilon_fn', DefaultEpsilonCalc(1, 0.01, 0.999))
         self._gamma = kwargs.get('gamma', 0.99)
-        self._tau = kwargs.get('tau', 0.99)
+        self._tau = kwargs.get('tau', 0.1)
+
+        self._print_config()
+
+    def _print_config(self):
+        print(f"DQNAgent configuration:\n"
+              f"\tGamma:\t{self._gamma}\n"
+              f"\tTau:\t{self._tau}\n")
 
     def act(self, observation):
         if random.random() > self._epsilon_fn():
             q_values = self._target_model.estimate([observation]).squeeze()
             return np.argmax(q_values)
         else:
-            return self._action_space.sample()
+            return np.random.randint(self._action_size)
 
     def step(self, obs, action, reward, next_obs, done):
         if not isinstance(action, (collections.Sequence, np.ndarray)):

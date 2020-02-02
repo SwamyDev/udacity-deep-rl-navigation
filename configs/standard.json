@@ -1,0 +1,17 @@
+{
+  "eps_start": 1,
+  "eps_end": 0.01,
+  "eps_decay": 0.995,
+  "batch_size": 64,
+  "record_size": 100000,
+  "model": {
+    "layers": [
+      {
+        "activation": "relu",
+        "size": 64
+      }
+    ]
+  },
+  "gamma": 0.99,
+  "tau": 0.001
+}

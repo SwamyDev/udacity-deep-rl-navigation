@@ -81,5 +81,5 @@ def _report_last_run(item, reports):
 
 
 @pytest.fixture
-def stochastic_run(request):
+def stochastic_run():
     return _RECORDER
