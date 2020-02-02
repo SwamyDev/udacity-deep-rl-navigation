@@ -79,3 +79,12 @@ class DQNAgent:
         q_target = rewards + (self._gamma * np.max(q_next, axis=1) * (1 - dones))
         self._local_model.fit(obs, actions, q_target)
         self._target_model.linear_interpolate(self._local_model, self._tau)
+
+    def save(self, save_path):
+        save_path.mkdir(parents=True, exist_ok=True)
+        self._target_model.save(save_path / 'target.pth')
+        self._local_model.save(save_path / 'local.pth')
+
+    def load(self, save_path):
+        self._target_model.load(save_path / 'target.pth')
+        self._local_model.load(save_path / 'local.pth')

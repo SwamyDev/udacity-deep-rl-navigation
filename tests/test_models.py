@@ -64,3 +64,24 @@ def test_linear_interpolation_between_models(make_model):
 
     assert base.estimate([[0, 0, 0]]).squeeze()[0] == approx(1, abs=0.3)
     assert base.estimate([[1, 1, 1]]).squeeze()[1] == approx(-1, abs=0.3)
+
+
+@pytest.mark.flaky(reruns=3)
+def test_save_and_load(make_model, tmp_path):
+    trained = make_model()
+    train(trained, episodes=500)
+
+    assert trained.estimate([[0, 0, 0]]).squeeze()[0] == approx(1, abs=0.3)
+    assert trained.estimate([[1, 1, 1]]).squeeze()[1] == approx(-1, abs=0.3)
+
+    trained.save(tmp_path / 'checkpoint.pth')
+
+    loaded = make_model()
+
+    assert loaded.estimate([[0, 0, 0]]).squeeze()[0] != approx(1, abs=0.3)
+    assert loaded.estimate([[1, 1, 1]]).squeeze()[1] != approx(-1, abs=0.3)
+
+    loaded.load(tmp_path / 'checkpoint.pth')
+
+    assert loaded.estimate([[0, 0, 0]]).squeeze()[0] == approx(1, abs=0.3)
+    assert loaded.estimate([[1, 1, 1]]).squeeze()[1] == approx(-1, abs=0.3)

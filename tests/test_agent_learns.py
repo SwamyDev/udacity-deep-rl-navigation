@@ -71,3 +71,25 @@ def test_agent_with_epsilon_one_is_as_bad_as_random(make_agent, random_walk, sto
     random_walk.train(agent)
     stochastic_run.record(random_walk.test(agent))
     assert stochastic_run.average() <= (random_walk.reward_range[0] + random_walk.reward_range[1]) / 2
+
+
+def test_agent_can_be_saved_and_loaded(make_agent, random_walk, tmp_path):
+    trained = make_agent()
+    train_to_target(trained, random_walk, target_score=random_walk.reward_range[1] - 0.05)
+    trained.save(tmp_path / 'checkpoint/')
+
+    loaded = make_agent(epsilon_fn=lambda: 0.0)
+    loaded.load(tmp_path / 'checkpoint/')
+
+    assert random_walk.test(loaded) == approx(random_walk.reward_range[1], abs=0.1)
+
+
+def train_to_target(agent, random_walk, target_score):
+    max_episodes = 10
+    episode = 0
+    score = random_walk.reward_range[0]
+    while score < target_score and episode < max_episodes:
+        random_walk.train(agent)
+        score = random_walk.test(agent)
+        episode += 1
+    assert episode < max_episodes

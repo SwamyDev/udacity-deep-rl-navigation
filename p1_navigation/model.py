@@ -96,3 +96,9 @@ class QModel:
 
     def parameters(self):
         return self._ann.parameters()
+
+    def save(self, file):
+        torch.save(self._ann.state_dict(), file)
+
+    def load(self, file):
+        self._ann.load_state_dict(torch.load(file))
