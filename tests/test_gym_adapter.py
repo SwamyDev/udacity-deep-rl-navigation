@@ -1,5 +1,6 @@
 import contextlib
 from numbers import Number
+from pathlib import Path
 
 import pytest
 from unityagents import UnityEnvironment
@@ -10,13 +11,14 @@ from tests.aux import assert_that, follows_contract
 
 @pytest.fixture(scope='module')
 def unity_env():
-    with loaded_unity_env(file_name="../resources/Banana_Linux/Banana.x86_64") as env:
+    with loaded_unity_env(
+            file_name=Path(__file__).absolute().parent.parent / "resources/Banana_Linux/Banana.x86_64") as env:
         yield env
 
 
 @contextlib.contextmanager
 def loaded_unity_env(file_name):
-    env = UnityEnvironment(file_name, no_graphics=True)
+    env = UnityEnvironment(str(file_name), no_graphics=True)
     try:
         yield env
     finally:
