@@ -4,6 +4,12 @@ import pytest
 from _pytest.runner import runtestprotocol
 
 
+def pytest_addoption(parser):
+    parser.addoption(
+        "--run-unity", action="store_true", default=False, help="run tests using unity environment"
+    )
+
+
 def pytest_configure(config):
     config.addinivalue_line(
         "markers", "stochastic(sample_size, max_samples=None): mark a test as stochastic running it `sample_size` times"
@@ -11,6 +17,16 @@ def pytest_configure(config):
                    "fixture. Optionally specify `max_samples`. By default it is equal to `sample_size`. If it is "
                    "bigger, then additional samples are drawn if the test fails after taking `sample_size` samples, up"
                    "to the specified `max_samples`. If it is smaller than `max_samples` it is capped to `sample_size`")
+    config.addinivalue_line("markers", "unity: mark test as to run only within a unity environment")
+
+
+def pytest_collection_modifyitems(config, items):
+    if config.getoption("--run-unity"):
+        return
+    skip_slow = pytest.mark.skip(reason="need --run-unity option to run")
+    for item in items:
+        if "unity" in item.keywords:
+            item.add_marker(skip_slow)
 
 
 class StochasticRunRecorder:
