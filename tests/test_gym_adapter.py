@@ -6,7 +6,7 @@ import pytest
 from unityagents import UnityEnvironment
 
 from p1_navigation.adapter import GymAdapter
-from tests.aux import assert_that, follows_contract
+from tests.auxiliary import assert_that, follows_contract
 
 
 @pytest.fixture(scope='module')
