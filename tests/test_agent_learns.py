@@ -2,12 +2,14 @@ import gym
 import pytest
 from pytest import approx
 
-from p1_navigation.agent import DQNAgent
+from p1_navigation.agent import DQNAgent, agent_save, agent_load
+from p1_navigation.epsilon import EpsilonExpDecay
 
 
 class RandomWalkSession(gym.Wrapper):
     def __init__(self):
         super().__init__(gym.make('gym_quickcheck:random-walk-v0'))
+        self.eps_calc = EpsilonExpDecay(1, 0.01, 0.999)
 
     def test(self, agent, num_episodes=100):
         return self._run_session(agent, num_episodes, is_test=True)
@@ -22,11 +24,12 @@ class RandomWalkSession(gym.Wrapper):
             obs = self.env.reset()
             total_r = 0
             while not done:
-                a = agent.act(obs)
+                a = agent.act(obs, self.eps_calc.epsilon)
                 next_obs, r, done, _ = self.env.step(a)
                 agent.step(obs, a, r, next_obs, done)
                 obs = next_obs
                 total_r += r
+                self.eps_calc.update()
             average_reward += total_r
             if not is_test:
                 agent.train()
@@ -66,8 +69,8 @@ def test_agent_learns_random_walk(agent, random_walk, stochastic_run):
 
 
 @pytest.mark.stochastic(sample_size=10)
-def test_agent_with_epsilon_one_is_as_bad_as_random(make_agent, random_walk, stochastic_run):
-    agent = make_agent(epsilon_fn=lambda: 1)
+def test_agent_with_epsilon_one_is_as_bad_as_random(agent, random_walk, stochastic_run):
+    random_walk.eps_calc = EpsilonExpDecay(1.0, 1.0, 1.0)
     random_walk.train(agent)
     stochastic_run.record(random_walk.test(agent))
     assert stochastic_run.average() <= (random_walk.reward_range[0] + random_walk.reward_range[1]) / 2
@@ -76,10 +79,9 @@ def test_agent_with_epsilon_one_is_as_bad_as_random(make_agent, random_walk, sto
 def test_agent_can_be_saved_and_loaded(make_agent, random_walk, tmp_path):
     trained = make_agent()
     train_to_target(trained, random_walk, target_score=random_walk.reward_range[1] - 0.05)
-    trained.save(tmp_path / 'checkpoint/')
+    agent_save(trained, tmp_path / 'checkpoint/')
 
-    loaded = make_agent(epsilon_fn=lambda: 0.0)
-    loaded.load(tmp_path / 'checkpoint/')
+    loaded = agent_load(tmp_path / 'checkpoint/')
 
     assert random_walk.test(loaded) == approx(random_walk.reward_range[1], abs=0.1)
 
