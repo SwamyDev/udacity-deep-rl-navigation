@@ -1,12 +1,11 @@
 [![Build Status](https://travis-ci.com/SwamyDev/udacity-deep-rl-navigation.svg?branch=master)](https://travis-ci.com/SwamyDev/udacity-deep-rl-navigation) [![Coverage Status](https://coveralls.io/repos/github/SwamyDev/udacity-deep-rl-navigation/badge.svg?branch=master)](https://coveralls.io/github/SwamyDev/udacity-deep-rl-navigation?branch=master)
 # Udacity Navigation Project
 
-This project is part of the Udacity Reinforcement Learning Nanodegree. In it, a DQN agent is trained to solve an episodic environment where it needs to navigate a 3D world collecting yellow bananas and avoiding blue bananas. The
-the environment is considered solved when the agent receives a score of >13 over 100 consecutive episodes.
+This project is part of the Udacity Reinforcement Learning Nanodegree. In it, a DQN agent is trained to solve an episodic environment where it needs to navigate a 3D world collecting yellow bananas and avoiding blue bananas. The environment is considered solved when the agent receives an average score of >13 over 100 consecutive episodes.
 
 ## Environment Setup
 ### Reward Signal
-The agent collects a reward of `+1` when collecting a yellow banana and a reward of `-1` when collecting a blue banana.
+The agent receives a reward of `+1` when collecting a yellow banana and a reward of `-1` when collecting a blue banana.
 
 ### Observation
 An observation state consists of the agent's current velocity and ray-based perception of surrounding objects. This state is encoded in a 1x37 tensor.
@@ -19,7 +18,7 @@ The agent can take 4 discrete actions:
  - `3` turn right
  
 ## Installation
-This project uses `GNU Make` to set up virtual environments and download dependencies and requires a Linux environment. Under Ubuntu make is part of the `build-essential` package (`apt install build-essential`). Other dependencies are python3 virutalenv (`apt install python3-venv`) and pip (`apt install python3-pip`).
+This project uses `GNU Make` to set up virtual environments and download dependencies. It requires a Linux environment. Under Ubuntu make is part of the `build-essential` package (`apt install build-essential`). Other dependencies are python3 virutalenv (`apt install python3-venv`) and pip (`apt install python3-pip`).
 
 
 ### Setup & Test
@@ -36,7 +35,7 @@ make test
 ## Quick Start
 
 ### The Command Line Interface
-When everything is working you can activate the environment (i.e. `source venv/bin/activate`) and you have access to the p1_navigation command-line interface.
+When the environment is set up you can activate the environment (i.e. `source venv/bin/activate`) and you have access to the p1_navigation command-line interface.
 
 
 Showing help messages:

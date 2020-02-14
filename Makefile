@@ -1,6 +1,6 @@
 .PHONY: help meta setup clean test coverage
 
-PIP_OPTIONS ?=
+PIP_OPTIONS ?= -e
 PYTHON ?= python3
 
 .DEFAULT: help
