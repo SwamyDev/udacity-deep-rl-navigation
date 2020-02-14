@@ -19,7 +19,7 @@ The agent can take 4 discrete actions:
  - `3` turn right
  
 ## Installation
-This project uses `GNU Make` to set up virtual environments and download dependencies and requires a Linux environment. Under Ubuntu make is part of the `build-essential` package (`apt install build-essential`)
+This project uses `GNU Make` to set up virtual environments and download dependencies and requires a Linux environment. Under Ubuntu make is part of the `build-essential` package (`apt install build-essential`). Other dependencies are python3 virutalenv (`apt install python3-venv`) and pip (`apt install python3-pip`).
 
 
 ### Setup & Test
