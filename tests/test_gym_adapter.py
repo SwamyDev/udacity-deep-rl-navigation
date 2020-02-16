@@ -12,7 +12,7 @@ from tests.auxiliary import assert_that, follows_contract
 @pytest.fixture(scope='module')
 def unity_env():
     with loaded_unity_env(
-            file_name=Path(__file__).absolute().parent.parent / "resources/Banana_Linux/Banana.x86_64") as env:
+            file_name=Path(__file__).absolute().parent.parent / "resources/environments/Banana_Linux/Banana.x86_64") as env:
         yield env
 
 

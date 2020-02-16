@@ -33,19 +33,20 @@ class GymEnvFactory:
 
 @click.group()
 @click.option('-e', '--environment', default=None, type=click.Path(dir_okay=False),
-              help="path to the unity environment (default: resources/Banana_Linux/Banana.x86_64")
+              help="path to the unity environment (default: None")
 @click.option('-g', '--gym', default=None, type=click.STRING,
-              help="name of a gym environment to train/test on (default: None)")
+              help="name of a gym environment to train/test on (default: CartPole-v0 )")
 @click.pass_context
 def cli(ctx, environment, gym):
     """
     CLI to train and run the navigation agent of the udacity project
     """
-    env_fac = UnityEnvFactory(Path(__file__).absolute().parent.parent / "resources/Banana_Linux/Banana.x86_64")
     if environment:
         env_fac = UnityEnvFactory(environment)
     elif gym:
         env_fac = GymEnvFactory(gym)
+    else:
+        env_fac = GymEnvFactory('CartPole-v0')
 
     ctx.obj = dict(
         env_factory=env_fac
