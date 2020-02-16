@@ -3,6 +3,10 @@ import contextlib
 import pytest
 from _pytest.runner import runtestprotocol
 
+def pytest_addoption(parser):
+    parser.addoption(
+        "--run-reacher", action="store_true", default=False, help="run tests for reacher unity environment"
+    )
 
 def pytest_configure(config):
     config.addinivalue_line(
@@ -11,6 +15,17 @@ def pytest_configure(config):
                    "fixture. Optionally specify `max_samples`. By default it is equal to `sample_size`. If it is "
                    "bigger, then additional samples are drawn if the test fails after taking `sample_size` samples, up"
                    "to the specified `max_samples`. If it is smaller than `max_samples` it is capped to `sample_size`")
+    config.addinivalue_line(
+        "markers", "reacher: mark test to use be run only when the reacher unity environment is configured")
+
+
+def pytest_collection_modifyitems(config, items):
+    if config.getoption("--run-reacher"):
+        return
+    skip_reacher = pytest.mark.skip(reason="need --run-reacher option to run")
+    for item in items:
+        if "reacher" in item.keywords:
+            item.add_marker(skip_reacher)
 
 
 class StochasticRunRecorder:
@@ -83,3 +98,8 @@ def _report_last_run(item, reports):
 @pytest.fixture
 def stochastic_run():
     return _RECORDER
+
+
+@pytest.fixture(scope='session')
+def use_reacher(request):
+    return request.config.getoption("--run-reacher")

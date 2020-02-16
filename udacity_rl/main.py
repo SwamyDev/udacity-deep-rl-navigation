@@ -31,6 +31,18 @@ class GymEnvFactory:
         return gym.make(self._gym_name)
 
 
+class AgentFactory:
+    _AGENT_MAPPING = {
+        'DQN': DQNAgent
+    }
+
+    def __init__(self, algorithm_name):
+        self._algorithm_name = algorithm_name
+
+    def __call__(self, *args, **kwargs):
+        return self._AGENT_MAPPING[self._algorithm_name](*args, **kwargs)
+
+
 @click.group()
 @click.option('-e', '--environment', default=None, type=click.Path(dir_okay=False),
               help="path to the unity environment (default: None")
@@ -63,27 +75,31 @@ def environment_session(env_factory, *args, **kwargs):
 
 
 @cli.command()
+@click.argument('algorithm', type=click.STRING)
 @click.argument('episodes', type=click.INT)
 @click.option('-c', '--config', default=None, type=click.File(mode='r'),
               help="to training configuration file")
 @click.option('-o', '--output', default="/tmp/p1_navigation_ckpt", type=click.Path(file_okay=False),
               help="path to store the agent at (default: /tmp/p1_navigation_ckpt)")
 @click.pass_context
-def train(ctx, episodes, config, output):
+def train(ctx, algorithm, episodes, config, output):
+    """
+    train the agent with the specified algorithm on the environment for the given amount of episodes
+    """
     cfg = dict()
     if config is not None:
         cfg = json.load(config)
 
-    agent, scores = run_train_session(ctx.obj['env_factory'], episodes, cfg)
+    agent, scores = run_train_session(ctx.obj['env_factory'], AgentFactory(algorithm), episodes, cfg)
     agent_save(agent, Path(output))
     plot_scores(scores)
 
 
-def run_train_session(env_fac, episodes, config):
+def run_train_session(env_fac, agent_fac, episodes, config):
     with environment_session(env_fac, train_mode=True) as env:
         eps_calc = EpsilonExpDecay(config.get('eps_start', 1), config.get('eps_end', 0.01),
                                    config.get('eps_decay', 0.995))
-        agent = DQNAgent(env.observation_space.shape[0], env.action_space.n, **config)
+        agent = agent_fac(env.observation_space.shape[0], env.action_space.n, **config)
 
         print(f"Epsilon configuration:\n"
               f"\t{eps_calc}\n")
@@ -157,6 +173,21 @@ def plot_scores(scores, avg_window=100):
 def moving_average(a, n=3):
     ret = np.cumsum(np.insert(a, 0, 0))
     return (ret[n:] - ret[:-n]) / n
+
+
+@cli.command()
+@click.pass_context
+def explore(ctx):
+    """
+    explore the specified environment by logging observation and action spaces and rendering an episode
+    """
+    with environment_session(ctx.obj['env_factory'], train_mode=False, render=True) as env:
+        print(f'Observation space: {env.observation_space}')
+        print(f'Action space: {env.action_space}')
+        done = False
+        env.reset()
+        while not done:
+            _, _, done, _ = env.step(env.action_space.sample())
 
 
 if __name__ == "__main__":

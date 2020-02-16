@@ -10,7 +10,13 @@ class GymAdapter:
         self._brain_name = self._env.brain_names[self._brain_index]
         self._brain = self._env.brains[self._brain_name]
         self.observation_space = spaces.Box(-np.inf, np.inf, shape=(self._brain.vector_observation_space_size,))
-        self.action_space = spaces.Discrete(self._brain.vector_action_space_size)
+        if self._brain.vector_action_space_type == 'discrete':
+            self.action_space = spaces.Discrete(self._brain.vector_action_space_size)
+        elif self._brain.vector_action_space_type == 'continuous':
+            self.action_space = spaces.Box(-np.inf, np.inf, shape=(self._brain.vector_action_space_size,))
+        else:
+            raise GymAdapterError(
+                f"The action type '{self._brain.vector_action_space_type}' is currently not supported")
 
     @property
     def brain_name(self):
@@ -31,3 +37,7 @@ class GymAdapter:
 
     def close(self):
         self._env.close()
+
+
+class GymAdapterError(ValueError):
+    pass

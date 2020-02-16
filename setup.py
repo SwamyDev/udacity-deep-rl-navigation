@@ -24,6 +24,6 @@ setup(
     extras_require={"test": ['pytest', 'pytest-cov', 'pytest-rerunfailures==7', 'gym-quickcheck']},
     python_requires='>=3.6,<3.8',
     entry_points={
-        'console_scripts': ['p1_navigation = udacity_rl.navigation:cli']
+        'console_scripts': ['udacity-rl = udacity_rl:cli']
     }
 )
