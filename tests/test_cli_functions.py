@@ -1,7 +1,7 @@
 import numpy as np
 from pytest import approx
 
-from p1_navigation.navigation import run_train_session, GymEnvFactory, run_test_session
+from udacity_rl.navigation import run_train_session, GymEnvFactory, run_test_session
 
 
 def test_navigation_training_invocation():

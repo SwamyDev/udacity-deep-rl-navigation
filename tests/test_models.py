@@ -1,7 +1,7 @@
 import pytest
 from pytest import approx
 
-from p1_navigation.model import QModel
+from udacity_rl.model import QModel
 
 
 @pytest.fixture

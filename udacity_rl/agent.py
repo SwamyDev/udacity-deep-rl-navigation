@@ -4,8 +4,8 @@ import random
 
 import numpy as np
 
-from p1_navigation.memory import Memory
-from p1_navigation.model import QModel
+from udacity_rl.memory import Memory
+from udacity_rl.model import QModel
 
 
 def _with_default(cfg, key, default):

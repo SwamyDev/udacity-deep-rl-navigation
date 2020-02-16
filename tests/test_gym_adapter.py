@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 from unityagents import UnityEnvironment
 
-from p1_navigation.adapter import GymAdapter
+from udacity_rl.adapter import GymAdapter
 from tests.auxiliary import assert_that, follows_contract
 
 

@@ -9,9 +9,9 @@ import click
 import gym
 from unityagents import UnityEnvironment
 
-from p1_navigation.adapter import GymAdapter
-from p1_navigation.agent import DQNAgent, agent_load, agent_save
-from p1_navigation.epsilon import EpsilonExpDecay
+from udacity_rl.adapter import GymAdapter
+from udacity_rl.agent import DQNAgent, agent_load, agent_save
+from udacity_rl.epsilon import EpsilonExpDecay
 
 
 class UnityEnvFactory:

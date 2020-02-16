@@ -2,8 +2,8 @@ import gym
 import pytest
 from pytest import approx
 
-from p1_navigation.agent import DQNAgent, agent_save, agent_load
-from p1_navigation.epsilon import EpsilonExpDecay
+from udacity_rl.agent import DQNAgent, agent_save, agent_load
+from udacity_rl.epsilon import EpsilonExpDecay
 
 
 class RandomWalkSession(gym.Wrapper):
