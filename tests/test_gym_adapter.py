@@ -57,7 +57,7 @@ def unity_brain(use_reacher):
 @pytest.fixture
 def unity_actions(use_reacher):
     if use_reacher:
-        return Box(-np.inf, np.inf, shape=(4,))
+        return Box(-1.0, 1.0, shape=(4,))
     return Discrete(4)
 
 

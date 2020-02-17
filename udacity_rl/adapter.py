@@ -13,7 +13,7 @@ class GymAdapter:
         if self._brain.vector_action_space_type == 'discrete':
             self.action_space = spaces.Discrete(self._brain.vector_action_space_size)
         elif self._brain.vector_action_space_type == 'continuous':
-            self.action_space = spaces.Box(-np.inf, np.inf, shape=(self._brain.vector_action_space_size,))
+            self.action_space = spaces.Box(-1.0, 1.0, shape=(self._brain.vector_action_space_size,))
         else:
             raise GymAdapterError(
                 f"The action type '{self._brain.vector_action_space_type}' is currently not supported")
