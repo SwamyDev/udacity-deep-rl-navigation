@@ -59,4 +59,4 @@ test: venv/test_done
 	. venv/bin/activate; pytest --verbose --color=yes --run-reacher tests/test_gym_adapter.py
 
 coverage: venv/test_done
-	. venv/bin/activate; pytest --cov=p1_navigation --cov-report term-missing tests
+	. venv/bin/activate; pytest --cov=udacity_rl --cov-report term-missing tests
