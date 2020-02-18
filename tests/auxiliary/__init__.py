@@ -1,3 +1,8 @@
+import gym
+
+from udacity_rl.epsilon import EpsilonExpDecay
+
+
 def assert_that(obj, matcher):
     assert matcher(obj)
 
@@ -44,3 +49,34 @@ class ContractMatcher:
 
 def follows_contract(interface=None, properties=None):
     return ContractMatcher(interface or [], properties or [])
+
+
+class GymSession(gym.Wrapper):
+    def __init__(self, gym_id, eps_calc):
+        super().__init__(gym.make(gym_id))
+        self.eps_calc = eps_calc
+
+    def test(self, agent, num_episodes=100):
+        return self._run_session(agent, num_episodes, is_test=True)
+
+    def train(self, agent, num_episodes=1000):
+        return self._run_session(agent, num_episodes, is_test=False)
+
+    def _run_session(self, agent, num_episodes, is_test=False):
+        average_reward = 0
+        for _ in range(num_episodes):
+            done = False
+            obs = self.env.reset()
+            total_r = 0
+            while not done:
+                a = agent.act(obs, self.eps_calc.epsilon)
+                next_obs, r, done, _ = self.env.step(a)
+                agent.step(obs, a, r, next_obs, done)
+                obs = next_obs
+                total_r += r
+                self.eps_calc.update()
+            average_reward += total_r
+            if not is_test:
+                agent.train()
+
+        return average_reward / num_episodes

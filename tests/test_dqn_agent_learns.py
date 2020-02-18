@@ -1,45 +1,14 @@
-import gym
 import pytest
 from pytest import approx
 
-from udacity_rl.agent import DQNAgent, agent_save, agent_load
+from tests.auxiliary import GymSession
+from udacity_rl.agents import DQNAgent, agent_save, agent_load
 from udacity_rl.epsilon import EpsilonExpDecay
-
-
-class RandomWalkSession(gym.Wrapper):
-    def __init__(self):
-        super().__init__(gym.make('gym_quickcheck:random-walk-v0'))
-        self.eps_calc = EpsilonExpDecay(1, 0.01, 0.999)
-
-    def test(self, agent, num_episodes=100):
-        return self._run_session(agent, num_episodes, is_test=True)
-
-    def train(self, agent, num_episodes=1000):
-        return self._run_session(agent, num_episodes, is_test=False)
-
-    def _run_session(self, agent, num_episodes, is_test=False):
-        average_reward = 0
-        for _ in range(num_episodes):
-            done = False
-            obs = self.env.reset()
-            total_r = 0
-            while not done:
-                a = agent.act(obs, self.eps_calc.epsilon)
-                next_obs, r, done, _ = self.env.step(a)
-                agent.step(obs, a, r, next_obs, done)
-                obs = next_obs
-                total_r += r
-                self.eps_calc.update()
-            average_reward += total_r
-            if not is_test:
-                agent.train()
-
-        return average_reward / num_episodes
 
 
 @pytest.fixture
 def random_walk():
-    return RandomWalkSession()
+    return GymSession('gym_quickcheck:random-walk-v0', EpsilonExpDecay(1, 0.01, 0.999))
 
 
 @pytest.fixture

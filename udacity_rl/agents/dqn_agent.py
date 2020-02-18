@@ -1,9 +1,9 @@
 import collections
-import json
 import random
 
 import numpy as np
 
+from udacity_rl.agents.agent import Agent
 from udacity_rl.memory import Memory
 from udacity_rl.model import QModel
 
@@ -29,23 +29,13 @@ def _only_memory_args(mem_cfg):
     return {k: mem_cfg[k] for k in mem_cfg if k in Memory.__init__.__code__.co_varnames}
 
 
-class DefaultEpsilonCalc:
-    def __init__(self, start, end, decay):
-        self._eps = start
-        self._end = end
-        self._decay = decay
-
-    def __call__(self):
-        self._eps = max(self._eps * self._decay, self._end)
-        return self._eps
-
-
-class DQNAgent:
+class DQNAgent(Agent):
     def __init__(self, observation_size, action_size, **kwargs):
+        super().__init__(observation_size, action_size, **kwargs)
         self._ctr_config = kwargs
-        mem_cfg = _with_mem_defaults(kwargs)
         self._observation_size = observation_size
         self._action_size = action_size
+        mem_cfg = _with_mem_defaults(kwargs)
         self._memory = Memory(**_only_memory_args(mem_cfg))
         self._target_model = QModel(observation_size, action_size, **_with_model_default(kwargs.get('model', dict())))
         self._local_model = QModel(observation_size, action_size, **_with_model_default(kwargs.get('model', dict())))
@@ -53,10 +43,6 @@ class DQNAgent:
         self._tau = kwargs.get('tau', 0.1)
 
         self._print_config()
-
-    @property
-    def configuration(self):
-        return {'observation_size': self._observation_size, 'action_size': self._action_size, **self._ctr_config}
 
     def _print_config(self):
         print(f"DQNAgent configuration:\n"
@@ -95,18 +81,3 @@ class DQNAgent:
     def load(self, save_path):
         self._target_model.load(save_path / 'target.pth')
         self._local_model.load(save_path / 'local.pth')
-
-
-def agent_save(agent, path):
-    path.mkdir(parents=True, exist_ok=True)
-    with open(path / 'config.json', mode='w') as fp:
-        json.dump(agent.configuration, fp)
-    agent.save(path)
-
-
-def agent_load(path):
-    with open(path / 'config.json', mode='r') as fp:
-        cfg = json.load(fp)
-        agent = DQNAgent(**cfg)
-        agent.load(path)
-        return agent

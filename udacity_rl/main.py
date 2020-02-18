@@ -10,7 +10,7 @@ import gym
 from unityagents import UnityEnvironment
 
 from udacity_rl.adapter import GymAdapter
-from udacity_rl.agent import DQNAgent, agent_load, agent_save
+from udacity_rl.agents import DQNAgent, agent_load, agent_save
 from udacity_rl.epsilon import EpsilonExpDecay
 
 
