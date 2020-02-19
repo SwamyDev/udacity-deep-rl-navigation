@@ -1,42 +1,19 @@
-import collections
 import random
 
 import numpy as np
 
-from udacity_rl.agents.agent import Agent
-from udacity_rl.memory import Memory
+from udacity_rl.agents.agent import with_default, MemoryAgent
 from udacity_rl.model import QModel
 
 
-def _with_default(cfg, key, default):
-    if key not in cfg:
-        cfg[key] = default
-    return cfg
-
-
-def _with_mem_defaults(cfg):
-    cfg = _with_default(cfg, 'batch_size', 64)
-    cfg = _with_default(cfg, 'record_size', int(1e5))
-    return cfg
-
-
 def _with_model_default(cfg):
-    cfg = _with_default(cfg, 'layers', [{'activation': 'relu', 'size': 64}])
+    cfg = with_default(cfg, 'layers', [{'activation': 'relu', 'size': 64}])
     return cfg
 
 
-def _only_memory_args(mem_cfg):
-    return {k: mem_cfg[k] for k in mem_cfg if k in Memory.__init__.__code__.co_varnames}
-
-
-class DQNAgent(Agent):
+class DQNAgent(MemoryAgent):
     def __init__(self, observation_size, action_size, **kwargs):
         super().__init__(observation_size, action_size, **kwargs)
-        self._ctr_config = kwargs
-        self._observation_size = observation_size
-        self._action_size = action_size
-        mem_cfg = _with_mem_defaults(kwargs)
-        self._memory = Memory(**_only_memory_args(mem_cfg))
         self._target_model = QModel(observation_size, action_size, **_with_model_default(kwargs.get('model', dict())))
         self._local_model = QModel(observation_size, action_size, **_with_model_default(kwargs.get('model', dict())))
         self._gamma = kwargs.get('gamma', 0.99)
@@ -57,12 +34,6 @@ class DQNAgent(Agent):
             return np.argmax(q_values)
         else:
             return np.random.randint(self._action_size)
-
-    def step(self, obs, action, reward, next_obs, done):
-        if not isinstance(action, (collections.Sequence, np.ndarray)):
-            action = [action]
-
-        self._memory.record(obs=obs, action=action, reward=reward, next_obs=next_obs, done=done)
 
     def train(self):
         if self._memory.is_unfilled():

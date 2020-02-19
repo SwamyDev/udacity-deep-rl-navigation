@@ -1,4 +1,5 @@
 import pytest
+from pytest import approx
 
 from tests.auxiliary import GymSession
 from udacity_rl.agents.ddpg_agent import DDPGAgent
@@ -13,7 +14,7 @@ def n_knob():
 @pytest.fixture
 def make_agent(n_knob):
     def factory(**kwargs):
-        return DDPGAgent(n_knob.observation_space.shape[0], n_knob.action_space.shape[0], **kwargs)
+        return DDPGAgent(n_knob.observation_space.shape[0], n_knob.action_space, **kwargs)
 
     return factory
 
@@ -27,3 +28,11 @@ def agent(make_agent):
 def test_untrained_agent_fails_at_n_knob(agent, n_knob, stochastic_run):
     stochastic_run.record(n_knob.test(agent))
     assert stochastic_run.average() == n_knob.reward_range[0]
+
+
+@pytest.mark.stochastic(sample_size=10)
+@pytest.mark.skip('WIP')
+def test_agent_learns_n_knob(agent, n_knob, stochastic_run):
+    n_knob.train(agent)
+    stochastic_run.record(n_knob.test(agent))
+    assert stochastic_run.average() == approx(n_knob.reward_range[1], abs=0.1)
