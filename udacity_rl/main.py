@@ -53,11 +53,17 @@ class AgentFactory:
               help="path to the unity environment (default: None")
 @click.option('-g', '--gym', default=None, type=click.STRING,
               help="name of a gym environment to train/test on (default: CartPole-v0 )")
+@click.option('--log-level', default="INFO", type=click.STRING,
+              help="set the logging level (default: INFO)")
 @click.pass_context
-def cli(ctx, environment, gym):
+def cli(ctx, environment, gym, log_level):
     """
     CLI to train and run the navigation agent of the udacity project
     """
+    numeric_level = getattr(logging, log_level.upper())
+    logging.basicConfig(level=numeric_level)
+    logging.root.setLevel(numeric_level)
+
     if environment:
         env_fac = UnityEnvFactory(environment)
     elif gym:
