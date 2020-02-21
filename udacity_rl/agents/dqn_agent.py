@@ -1,9 +1,11 @@
+import logging
 import random
-
 import numpy as np
 
 from udacity_rl.agents.agent import with_default, MemoryAgent
 from udacity_rl.model import QModel
+
+logger = logging.getLogger(__name__)
 
 
 def _with_model_default(cfg):
@@ -12,21 +14,23 @@ def _with_model_default(cfg):
 
 
 class DQNAgent(MemoryAgent):
-    def __init__(self, observation_size, action_size, **kwargs):
-        super().__init__(observation_size, action_size, **kwargs)
-        self._target_model = QModel(observation_size, action_size, **_with_model_default(kwargs.get('model', dict())))
-        self._local_model = QModel(observation_size, action_size, **_with_model_default(kwargs.get('model', dict())))
+    def __init__(self, observation_space, action_space, **kwargs):
+        super().__init__(observation_space, action_space, **kwargs)
+        self._target_model = QModel(self._observation_size, self._action_size,
+                                    **_with_model_default(kwargs.get('model', dict())))
+        self._local_model = QModel(self._observation_size, self._action_size,
+                                   **_with_model_default(kwargs.get('model', dict())))
         self._gamma = kwargs.get('gamma', 0.99)
         self._tau = kwargs.get('tau', 0.1)
 
         self._print_config()
 
     def _print_config(self):
-        print(f"DQNAgent configuration:\n"
-              f"\tObservation Size:\t{self._observation_size}\n"
-              f"\tAction Size:\t\t{self._action_size}\n"
-              f"\tGamma:\t\t\t{self._gamma}\n"
-              f"\tTau:\t\t\t{self._tau}\n")
+        logger.info(f"DQNAgent configuration:\n"
+                    f"\tObservation Size:\t{self._observation_size}\n"
+                    f"\tAction Size:\t\t{self._action_size}\n"
+                    f"\tGamma:\t\t\t{self._gamma}\n"
+                    f"\tTau:\t\t\t{self._tau}\n")
 
     def act(self, observation, epsilon=0):
         if random.random() > epsilon:

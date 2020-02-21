@@ -38,7 +38,7 @@ def actor(make_actor):
 @pytest.fixture
 def make_critic():
     def factory(obs_size=3, act_size=2, layers=None):
-        layers = layers or [dict(activation='relu', size=64), dict(activation='relu', size=64)]
+        layers = layers or [dict(activation='leaky_relu', size=64), dict(activation='leaky_relu', size=64)]
         return Critic(obs_size, act_size, layers)
 
     return factory
@@ -148,9 +148,7 @@ def test_critic_fit_q_target(critic):
     act = torch.from_numpy(np.array([[1, -1]], dtype=np.float32))
     target = torch.from_numpy(np.array([[10]], dtype=np.float32))
     for _ in range(1000):
-        exp = critic(obs, act)
-        loss = F.mse_loss(exp, target)
-        critic.minimize(loss)
+        critic.fit(obs, act, target)
 
     assert_critic_val_eq(critic(obs, act).cpu().detach().numpy(), np.array([[10]]))
 

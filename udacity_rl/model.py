@@ -1,10 +1,13 @@
 from collections import deque
 from contextlib import contextmanager
 
+import logging
 import numpy as np
 import torch
 from torch import nn as nn, optim as optim
 from torch.nn import functional as F
+
+logger = logging.getLogger(__name__)
 
 
 def _identity(x):
@@ -14,6 +17,7 @@ def _identity(x):
 class ConfigurableNetwork(nn.Module):
     _ACTIVATION_MAPPING = {
         'relu': F.relu,
+        'leaky_relu': F.leaky_relu,
         'tanh': F.tanh,
         'identity': _identity,
     }
@@ -28,10 +32,10 @@ class ConfigurableNetwork(nn.Module):
         self._print_architecture()
 
     def _print_architecture(self):
-        print("FeedForwardNetwork architecture:")
+        logger.info("Configurable architecture:")
         for activation, linear in self._layers:
-            print(f"\t{activation.__name__}({linear.in_features}x{linear.out_features})")
-        print("\n")
+            logger.info(f"\t{activation.__name__}({linear.in_features}x{linear.out_features})")
+        logger.info("\n")
 
     def _create_layers(self, in_size, layer_cfg):
         layers = list()
@@ -87,12 +91,16 @@ class Model:
         self._ann = self._make_ann(layers, seed)
         self._optimizer = optim.Adam(self._ann.parameters(), lr=lr)
 
-        print(f"Qodel configuration:\n"
-              f"\tLearning rate:\t{lr}\n"
-              f"\tDevice:\t{device}\n")
+        logger.info(f"Model configuration:\n"
+                    f"\tLearning rate:\t{lr}\n"
+                    f"\tDevice:\t{device}\n")
+
+    @property
+    def device(self):
+        return self._device
 
     def _make_ann(self, layers, seed):
-        return FeedForwardNetwork(self._input_size, layers, seed).to(self._device)
+        return FeedForwardNetwork(self._input_size, layers, seed).to(self.device)
 
     def minimize(self, loss):
         self._optimizer.zero_grad()
@@ -100,8 +108,8 @@ class Model:
         self._optimizer.step()
 
     def linear_interpolate(self, target, tau):
-        for mine, target in zip(self.parameters(), target.parameters()):
-            mine.data.copy_((1 - tau) * mine.data + tau * target.data)
+        for mine, other in zip(self.parameters(), target.parameters()):
+            mine.data.copy_((1 - tau) * mine.data + tau * other.data)
 
     def parameters(self):
         return self._ann.parameters()
@@ -159,3 +167,7 @@ class Critic(Model):
 
     def __call__(self, observations, actions):
         return self._ann(observations, actions)
+
+    def fit(self, observations, actions, targets):
+        critic_loss = F.mse_loss(self(observations, actions), targets)
+        self.minimize(critic_loss)

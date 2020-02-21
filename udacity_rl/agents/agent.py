@@ -3,6 +3,8 @@ import collections
 import numpy as np
 from abc import ABC
 
+from gym import spaces
+
 from udacity_rl.memory import Memory
 
 
@@ -13,14 +15,33 @@ def with_default(cfg, key, default):
 
 
 class Agent(abc.ABC):
-    def __init__(self, observation_size, action_size, **kwargs):
+    def __init__(self, observation_space, action_space, **kwargs):
         self._ctr_config = kwargs
-        self._observation_size = observation_size
-        self._action_size = action_size
+        self._observation_space = observation_space
+        self._action_space = action_space
+        self._observation_size = self._get_size_from_space(self.observation_space)
+        self._action_size = self._get_size_from_space(self.action_space)
+
+    @staticmethod
+    def _get_size_from_space(space):
+        if isinstance(space, spaces.Discrete):
+            return space.n
+        elif isinstance(space, spaces.Box):
+            return space.shape[0]
+        else:
+            raise Agent.ConfigurationError(f"the space {space} is currently not supported")
+
+    @property
+    def observation_space(self):
+        return self._observation_space
+
+    @property
+    def action_space(self):
+        return self._action_space
 
     @property
     def configuration(self):
-        return {'observation_size': self._observation_size, 'action_size': self._action_size, **self._ctr_config}
+        return self._ctr_config
 
     @abc.abstractmethod
     def act(self, observation, epsilon=0):
@@ -42,6 +63,9 @@ class Agent(abc.ABC):
     def load(self, save_path):
         pass
 
+    class ConfigurationError(ValueError):
+        pass
+
 
 def _with_mem_defaults(cfg):
     cfg = with_default(cfg, 'batch_size', 64)
@@ -54,8 +78,8 @@ def _only_memory_args(mem_cfg):
 
 
 class MemoryAgent(Agent, ABC):
-    def __init__(self, observation_size, action_size, **kwargs):
-        super().__init__(observation_size, action_size, **kwargs)
+    def __init__(self, observation_space, action_space, **kwargs):
+        super().__init__(observation_space, action_space, **kwargs)
         mem_cfg = _with_mem_defaults(kwargs)
         self._memory = Memory(**_only_memory_args(mem_cfg))
 

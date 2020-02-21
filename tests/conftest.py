@@ -1,12 +1,15 @@
 import contextlib
+import logging
 
 import pytest
 from _pytest.runner import runtestprotocol
+
 
 def pytest_addoption(parser):
     parser.addoption(
         "--run-reacher", action="store_true", default=False, help="run tests for reacher unity environment"
     )
+
 
 def pytest_configure(config):
     config.addinivalue_line(
@@ -103,3 +106,8 @@ def stochastic_run():
 @pytest.fixture(scope='session')
 def use_reacher(request):
     return request.config.getoption("--run-reacher")
+
+
+@pytest.fixture(autouse=True)
+def set_log_level(caplog):
+    caplog.set_level(logging.WARNING)
