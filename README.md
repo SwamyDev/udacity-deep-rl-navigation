@@ -4,7 +4,7 @@
 This repository is part of the Udacity Reinforcement Learning Nanodegree. It contains solutions to the courses class projects `navigation` and `continuous control`. You can find more detailed explanations for each project and their environments in their dedicated README or Report.md files:
 
 - [Project Navigation](doc/README_p1_navigation.md)
-- [Project Continuous Control]() 
+- [Project Continuous Control](doc/README_p2_continuous.md) 
  
 ## Installation
 To run the code of the projects you need to install the repositories virtual environment. To make this as easy as possible it uses `GNU Make` to set up virtual environments and download dependencies. It requires a Linux environment. Under Ubuntu make is part of the `build-essential` package (`apt install build-essential`). Other dependencies are python3 virutalenv (`apt install python3-venv`) and pip (`apt install python3-pip`).
