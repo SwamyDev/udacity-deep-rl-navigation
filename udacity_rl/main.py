@@ -90,8 +90,8 @@ def environment_session(env_factory, *args, **kwargs):
 @click.argument('episodes', type=click.INT)
 @click.option('-c', '--config', default=None, type=click.File(mode='r'),
               help="to training configuration file")
-@click.option('-o', '--output', default="/tmp/p1_navigation_ckpt", type=click.Path(file_okay=False),
-              help="path to store the agent at (default: /tmp/p1_navigation_ckpt)")
+@click.option('-o', '--output', default="/tmp/agent_ckpt", type=click.Path(file_okay=False),
+              help="path to store the agent at (default: /tmp/agent_ckpt)")
 @click.option('--max-t', default=None, type=click.INT,
               help="maximum episode steps (default: None)")
 @click.pass_context
