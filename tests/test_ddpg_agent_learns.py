@@ -31,6 +31,7 @@ def test_untrained_agent_fails_at_n_knob(agent, n_knob, stochastic_run):
 
 
 @pytest.mark.stochastic(sample_size=5)
+@pytest.mark.flaky(reruns=3)
 def test_agent_learns_n_knob(agent, n_knob, stochastic_run):
     n_knob.train(agent, train_freq=2)
     stochastic_run.record(n_knob.test(agent))
