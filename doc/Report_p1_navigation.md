@@ -1,6 +1,6 @@
 # Project: Navigation Report
 
-This report illustrates, how Deep Q-Networks are applied to solve a gathering task within a 3D environment. The environment was created using Unity and the goal is to collect as many yellow bananas as possible while avoiding the blue ones. See the `README.md` for a more detailed description of the environment. In this report, I also try to highlight the importance of diligent software practises and how they played a crucial role in developing a working DQN agent.
+This report illustrates, how Deep Q-Networks are applied to solve a gathering task within a 3D environment. The environment was created using Unity and the goal is to collect as many yellow bananas as possible while avoiding the blue ones. See the [README_p1_navigation.md](README_p1_navigation.md) for a more detailed description of the environment. In this report, I also try to highlight the importance of diligent software practises and how they played a crucial role in developing a working DQN agent.
 
 ## Deep Q-Networks
 In traditional Q-Learning the agent tries to find the optimal policy (`pi*`) by trying to estimate the optimal action-value function `Q*` which maps state-action pairs to their value. The value of a state-action pair is the expected (discounted) accumulated return of the agent when it follows its policy. If the agent has access to `Q*` getting to `pi*` is trivial, as the agent simply needs to select the action with the highest value. However, computing `Q*` is the tricky part.
@@ -34,7 +34,7 @@ I've been using config files for controlling all agent hyperparameters. These fi
 ## Results
 Using a very simple neural network architecture with just a very small hidden layer of 16 neurons it is possible to solve the Banana environment. The final agent that I've trained solved it after ~700 episodes.
 
-![Graph of Training Run](resources/images/dqn_training.png)
+![Graph of Training Run](../resources/images/dqn_training.png)
 
 The final model used the `ann_1x16_20-14-02.json` agent configuration:
 ```json
