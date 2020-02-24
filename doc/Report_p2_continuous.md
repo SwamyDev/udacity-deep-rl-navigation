@@ -14,7 +14,7 @@ The algorithm implemented in this project works as follows:
 
 1) Select an action from the policy model `mu_local(s)` and add some scaled uniform random noise to it
     - Adding noise ensures sufficient exploration early on and the magnitude of the noise is reduced as training progress. This is similar to the epsilon greedy strategy of `DQN`. 
-    - According to more recent findings suggest that Ornstein–Uhlenbeck noise is not strictly necessary, hence I've used this much simpler process
+    - According to more recent findings suggest that Ornstein–Uhlenbeck noise is not strictly necessary, hence I've used this much simpler process (see [Spinning Up RL from OpenAI](https://spinningup.openai.com/en/latest/algorithms/ddpg.html))
 2) Advance the environment with the selected action and record the trajectory (current state; next state; if its the terminal state; reward) in the memory buffer
     - Recording and storing trajectories allows neural networks to be trained efficiently in batches
     - Keeping records of trajectories also allows them to be used multiple times in training
