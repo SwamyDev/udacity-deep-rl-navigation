@@ -1,6 +1,6 @@
 import pytest
 
-from p1_navigation.epsilon import EpsilonExpDecay
+from udacity_rl.epsilon import EpsilonExpDecay
 
 
 @pytest.fixture

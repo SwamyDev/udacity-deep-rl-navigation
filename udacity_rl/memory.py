@@ -1,7 +1,10 @@
+import logging
 import random
 from collections import deque
 
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 
 class Memory:
@@ -15,9 +18,9 @@ class Memory:
         self._print_config()
 
     def _print_config(self):
-        print(f"Memory configuration:\n"
-              f"\tRecord size:\t{self._record.maxlen}\n"
-              f"\tBatch size:\t{self._batch_size}\n")
+        logger.info(f"Memory configuration:\n"
+                    f"\tRecord size:\t{self._record.maxlen}\n"
+                    f"\tBatch size:\t{self._batch_size}\n")
 
     def record(self, **kwargs):
         keys = tuple(kwargs.keys())

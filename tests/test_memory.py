@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from p1_navigation.memory import Memory, MemoryRecordError
+from udacity_rl.memory import Memory, MemoryRecordError
 
 
 @pytest.fixture

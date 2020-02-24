@@ -202,5 +202,5 @@ fabric.properties
 
 **/unity-environment.log
 
-resources/Banana_Linux
+resources/environments/**
 

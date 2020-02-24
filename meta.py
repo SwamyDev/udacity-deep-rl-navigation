@@ -9,7 +9,7 @@ def parse_version(git_version):
 
 def update_version(git_version):
     v = parse_version(git_version)
-    with open('p1_navigation/_version.py', 'w') as f:
+    with open('udacity_rl/_version.py', 'w') as f:
         f.write(f"__version__ = '{v}'\n")
 
 
