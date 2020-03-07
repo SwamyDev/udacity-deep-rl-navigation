@@ -9,6 +9,9 @@ def pytest_addoption(parser):
     parser.addoption(
         "--run-reacher", action="store_true", default=False, help="run tests for reacher unity environment"
     )
+    parser.addoption(
+        "--run-multiagent", action="store_true", default=False, help="run tests for multi agent unity environment"
+    )
 
 
 def pytest_configure(config):
@@ -20,15 +23,21 @@ def pytest_configure(config):
                    "to the specified `max_samples`. If it is smaller than `max_samples` it is capped to `sample_size`")
     config.addinivalue_line(
         "markers", "reacher: mark test to use be run only when the reacher unity environment is configured")
+    config.addinivalue_line(
+        "markers", "multiagent: mark test to use be run only when the multi agent unity environment is configured")
 
 
 def pytest_collection_modifyitems(config, items):
-    if config.getoption("--run-reacher"):
-        return
-    skip_reacher = pytest.mark.skip(reason="need --run-reacher option to run")
-    for item in items:
-        if "reacher" in item.keywords:
-            item.add_marker(skip_reacher)
+    skip_marker(config, items, "reacher")
+    skip_marker(config, items, "multiagent")
+
+
+def skip_marker(config, items, marker):
+    if not config.getoption(f"--run-{marker}"):
+        skip = pytest.mark.skip(reason=f"need --run-{marker} option to run")
+        for item in items:
+            if marker in item.keywords:
+                item.add_marker(skip)
 
 
 class StochasticRunRecorder:
@@ -106,6 +115,11 @@ def stochastic_run():
 @pytest.fixture(scope='session')
 def use_reacher(request):
     return request.config.getoption("--run-reacher")
+
+
+@pytest.fixture(scope='session')
+def use_multi_agent(request):
+    return request.config.getoption("--run-multiagent")
 
 
 @pytest.fixture(autouse=True)

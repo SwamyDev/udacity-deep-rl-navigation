@@ -1,5 +1,4 @@
 import contextlib
-import numpy as np
 from numbers import Number
 from pathlib import Path
 
@@ -12,10 +11,12 @@ from tests.auxiliary import assert_that, follows_contract
 
 
 @pytest.fixture(scope='module')
-def unity_env(use_reacher):
+def unity_env(use_reacher, use_multi_agent):
     env_file = "resources/environments/Banana_Linux/Banana.x86_64"
     if use_reacher:
         env_file = "resources/environments/Reacher_Linux/Reacher.x86_64"
+    elif use_multi_agent:
+        env_file = "resources/environments/Tennis_Linux/Tennis.x86_64"
     with loaded_unity_env(file_name=Path(__file__).absolute().parent.parent / env_file) as env:
         yield env
 
@@ -30,10 +31,12 @@ def loaded_unity_env(file_name):
 
 
 @pytest.fixture(scope='session')
-def gym_interface(use_reacher):
+def gym_interface(use_reacher, use_multi_agent):
     action = (0,)
     if use_reacher:
         action = ([0, 0, 0, 0],)
+    if use_multi_agent:
+        action = ([[0, 0], [0, 0]],)
     return [('reset', ()), ('step', action), ('render', ())]
 
 
@@ -48,24 +51,30 @@ def adapter(unity_env):
 
 
 @pytest.fixture
-def unity_brain(use_reacher):
+def unity_brain(use_reacher, use_multi_agent):
     if use_reacher:
         return "ReacherBrain"
+    if use_multi_agent:
+        return "TennisBrain"
     return "BananaBrain"
 
 
 @pytest.fixture
-def unity_actions(use_reacher):
+def unity_actions(use_reacher, use_multi_agent):
     if use_reacher:
         return Box(-1.0, 1.0, shape=(4,))
+    if use_multi_agent:
+        return Box(-1.0, 1.0, shape=(2, 2))
     return Discrete(4)
 
 
 @pytest.fixture
-def unity_observation_shape(use_reacher):
+def unity_observation_shape(use_reacher, use_multi_agent):
     if use_reacher:
-        return (33,)
-    return (37,)
+        return 33,
+    if use_multi_agent:
+        return 2, 24
+    return 37,
 
 
 def test_gym_adapter_adheres_to_gym_contract(adapter, gym_interface, gym_properties):
@@ -84,9 +93,12 @@ def test_reset_returns_observation_of_selected_brain(adapter, unity_observation_
     assert adapter.reset().shape == unity_observation_shape
 
 
-def test_step_returns_next_observation_reward_done_and_info(adapter, unity_actions, unity_observation_shape):
+def test_step_returns_next_observation_reward_done_and_info(adapter, unity_actions, unity_observation_shape,
+                                                            use_multi_agent):
     obs, reward, done, info = adapter.step(unity_actions.sample())
-    assert obs.shape == unity_observation_shape and \
-           isinstance(reward, Number) and \
-           isinstance(done, type(True)) and \
-           info is not None
+    assert obs.shape == unity_observation_shape and isinstance(done, type(True)) and info is not None
+
+    if use_multi_agent:
+        assert len(reward) == len(info.agents) and all(isinstance(r, Number) for r in reward)
+    else:
+        assert isinstance(reward, Number)

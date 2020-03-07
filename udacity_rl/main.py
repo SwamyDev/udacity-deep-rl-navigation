@@ -191,18 +191,23 @@ def moving_average(a, n=3):
 
 
 @cli.command()
+@click.option('-n', '--num', default=1, type=click.INT,
+              help="number (-1 infinite runs) of episodes to explore. (default: 1)")
 @click.pass_context
-def explore(ctx):
+def explore(ctx, num):
     """
     explore the specified environment by logging observation and action spaces and rendering an episode
     """
     with environment_session(ctx.obj['env_factory'], train_mode=False, render=True) as env:
         logger.info(f'Observation space: {env.observation_space}')
         logger.info(f'Action space: {env.action_space}')
-        done = False
-        env.reset()
-        while not done:
-            _, _, done, _ = env.step(env.action_space.sample())
+        e = 0
+        while e < num or num == -1:
+            done = False
+            env.reset()
+            while not done:
+                _, _, done, _ = env.step(env.action_space.sample())
+            e += 1
 
 
 if __name__ == "__main__":
