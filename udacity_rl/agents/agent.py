@@ -1,7 +1,6 @@
 import abc
 import collections
 import numpy as np
-from abc import ABC
 
 from gym import spaces
 
@@ -14,34 +13,29 @@ def with_default(cfg, key, default):
     return cfg
 
 
-class Agent(abc.ABC):
-    def __init__(self, observation_space, action_space, **kwargs):
-        self._ctr_config = kwargs
-        self._observation_space = observation_space
-        self._action_space = action_space
-        self._observation_size = self._get_size_from_space(self.observation_space)
-        self._action_size = self._get_size_from_space(self.action_space)
-
-    @staticmethod
-    def _get_size_from_space(space):
-        if isinstance(space, spaces.Discrete):
-            return space.n
-        elif isinstance(space, spaces.Box):
-            return space.shape[0]
-        else:
-            raise Agent.ConfigurationError(f"the space {space} is currently not supported")
+class AgentInterface(abc.ABC):
+    class ConfigurationError(ValueError):
+        pass
 
     @property
+    @abc.abstractmethod
+    def action_size(self):
+        pass
+
+    @property
+    @abc.abstractmethod
     def observation_space(self):
-        return self._observation_space
+        pass
 
     @property
+    @abc.abstractmethod
     def action_space(self):
-        return self._action_space
+        pass
 
     @property
+    @abc.abstractmethod
     def configuration(self):
-        return self._ctr_config
+        pass
 
     @abc.abstractmethod
     def act(self, observation, epsilon=0):
@@ -63,8 +57,39 @@ class Agent(abc.ABC):
     def load(self, save_path):
         pass
 
-    class ConfigurationError(ValueError):
-        pass
+
+class Agent(AgentInterface, abc.ABC):
+    def __init__(self, observation_space, action_space, **kwargs):
+        self._ctr_config = kwargs
+        self._observation_space = observation_space
+        self._action_space = action_space
+        self._observation_size = self._get_size_from_space(self.observation_space)
+        self._action_size = self._get_size_from_space(self.action_space)
+
+    @staticmethod
+    def _get_size_from_space(space):
+        if isinstance(space, spaces.Discrete):
+            return space.n
+        elif isinstance(space, spaces.Box):
+            return space.shape[0]
+        else:
+            raise AgentInterface.ConfigurationError(f"the space {space} is currently not supported")
+
+    @property
+    def observation_space(self):
+        return self._observation_space
+
+    @property
+    def action_space(self):
+        return self._action_space
+
+    @property
+    def action_size(self):
+        return self._action_size
+
+    @property
+    def configuration(self):
+        return self._ctr_config
 
 
 def _with_mem_defaults(cfg):
@@ -77,7 +102,7 @@ def _only_memory_args(mem_cfg):
     return {k: mem_cfg[k] for k in mem_cfg if k in Memory.__init__.__code__.co_varnames}
 
 
-class MemoryAgent(Agent, ABC):
+class MemoryAgent(Agent, abc.ABC):
     def __init__(self, observation_space, action_space, **kwargs):
         super().__init__(observation_space, action_space, **kwargs)
         mem_cfg = _with_mem_defaults(kwargs)
@@ -88,3 +113,62 @@ class MemoryAgent(Agent, ABC):
             action = [action]
 
         self._memory.record(obs=obs, action=action, reward=reward, next_obs=next_obs, done=done)
+
+
+class MultiAgentWrapper(AgentInterface):
+    def __init__(self, agents):
+        self._agents = agents
+        self._num_agents = len(self._agents)
+
+    def act(self, observation, epsilon=0):
+        self._validate_tensor(observation, "observation")
+
+        act = np.empty(shape=(self._num_agents, self.action_size))
+        for i in range(self._num_agents):
+            act[i] = self._agents[i].act(observation[i], epsilon)
+
+        return act
+
+    def _validate_tensor(self, tensor, what):
+        if len(tensor) != self._num_agents:
+            raise self.ConfigurationError(
+                f"The {what}(len={len(tensor)}) does not match the number of agents ({self._num_agents})")
+
+    @property
+    def action_size(self):
+        return self._agents[0].action_size
+
+    @property
+    def observation_space(self):
+        return self._agents[0].observation_space
+
+    @property
+    def action_space(self):
+        return self._agents[0].action_space
+
+    @property
+    def configuration(self):
+        self._agents[0].configuration
+
+    def step(self, obs, action, reward, next_obs, done):
+        self._validate_tensor(obs, "obs")
+        self._validate_tensor(action, "action")
+        self._validate_tensor(reward, "reward")
+        self._validate_tensor(next_obs, "next_obs")
+
+        for i in range(self._num_agents):
+            self._agents[i].step(obs[i], action[i], reward[i], next_obs[i], done)
+
+    def train(self):
+        for a in self._agents:
+            a.train()
+
+    def save(self, save_path):
+        for i in range(self._num_agents):
+            p = save_path / f"wrapped_agent_{i}"
+            p.mkdir(parents=True, exist_ok=True)
+            self._agents[i].save(p)
+
+    def load(self, save_path):
+        for i in range(self._num_agents):
+            self._agents[i].load(save_path / f"wrapped_agent_{i}")

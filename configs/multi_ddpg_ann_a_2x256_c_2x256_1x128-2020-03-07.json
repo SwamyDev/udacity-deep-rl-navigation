@@ -1,0 +1,42 @@
+{
+  "eps_start": 1,
+  "eps_end": 0.0001,
+  "eps_decay": 0.995,
+  "batch_size": 128,
+  "record_size": 1000000,
+  "actor": {
+    "layers": [
+      {
+        "activation": "relu",
+        "size": 256
+      },
+      {
+        "activation": "relu",
+        "size": 256
+      }
+    ],
+    "device": "cuda:0",
+    "lr": 1e-4
+  },
+  "critic": {
+    "layers": [
+      {
+        "activation": "leaky_relu",
+        "size": 256
+      },
+      {
+        "activation": "leaky_relu",
+        "size": 256
+      },
+      {
+        "activation": "leaky_relu",
+        "size": 128
+      }
+    ],
+    "device": "cuda:0",
+    "lr": 3e-4
+  },
+  "gamma": 0.99,
+  "tau": 1e-3
+}
+
