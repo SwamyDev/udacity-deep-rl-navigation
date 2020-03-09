@@ -15,6 +15,7 @@ from udacity_rl.adapter import GymAdapter
 from udacity_rl.agents import DQNAgent, agent_load, agent_save
 from udacity_rl.agents.agent import MultiAgentWrapper
 from udacity_rl.agents.ddpg_agent import DDPGAgent
+from udacity_rl.agents.maddpg_agent import MADDPGAgent
 from udacity_rl.epsilon import EpsilonExpDecay
 
 logger = logging.getLogger(__name__)
@@ -41,6 +42,7 @@ class AgentFactory:
     _AGENT_MAPPING = {
         'DQN': DQNAgent,
         'DDPG': DDPGAgent,
+        'MADDPG': MADDPGAgent,
     }
 
     def __init__(self, algorithm_name):

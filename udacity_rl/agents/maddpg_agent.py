@@ -38,12 +38,17 @@ DEFAULT_CRITIC_CFG = {
 }
 
 
-class DDPGAgent(MemoryAgent):
+class MADDPGAgent(MemoryAgent):
     def __init__(self, observation_space, action_space, actor=None, critic=None, **kwargs):
         super().__init__(observation_space, action_space, actor=actor, critic=critic, **kwargs)
 
+        self._num_agents = self.observation_space.shape[0]
+        self._observation_size = self._num_agents * self.observation_space.shape[1]
+        self._action_size = self._num_agents * self.action_space.shape[1]
+
         actor = actor or DEFAULT_ACTOR_CFG
         critic = critic or DEFAULT_CRITIC_CFG
+
         self._algorithm = DDPGAlgorithm(Actor(self._observation_size, self._action_size, **actor),
                                         Actor(self._observation_size, self._action_size, **actor),
                                         Critic(self._observation_size, self._action_size, **critic),
@@ -52,21 +57,25 @@ class DDPGAgent(MemoryAgent):
                                         kwargs.get('tau', 1e-3))
 
     def _print_config(self):
-        logger.info(f"DDPG configuration:\n"
+        logger.info(f"MADDPG configuration:\n"
+                    f"\tNumber of agents:\t{self._num_agents}\n"
                     f"\tObservation Size:\t{self._observation_size}\n"
                     f"\tAction Size:\t\t{self._action_size}\n")
 
     def act(self, observation, epsilon=0):
-        action = self._algorithm.estimate(observation)
+        action = self._algorithm.estimate(observation.flatten()).reshape(self._num_agents, -1)
         if epsilon:
-            action += epsilon * self.action_space.sample()
-        return np.clip(action, self.action_space.low, self.action_space.high)
+            action = epsilon * self.action_space.sample() + (1 - epsilon) * action
+        return action
 
     def train(self):
         if self._memory.is_unfilled():
             return
 
         self._algorithm.fit(*self._memory.sample())
+
+    def step(self, obs, action, reward, next_obs, done):
+        super().step(obs.flatten(), action.flatten(), np.mean(reward), next_obs.flatten(), done)
 
     def save(self, save_path):
         self._algorithm.save_models(save_path)

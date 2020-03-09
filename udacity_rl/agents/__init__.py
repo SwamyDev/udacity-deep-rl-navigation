@@ -3,10 +3,12 @@ import pickle
 
 from udacity_rl.agents.dqn_agent import DQNAgent
 from udacity_rl.agents.ddpg_agent import DDPGAgent
+from udacity_rl.agents.maddpg_agent import MADDPGAgent
 
 _CLASS_MAPPING = {
     DQNAgent.__name__: DQNAgent,
     DDPGAgent.__name__: DDPGAgent,
+    MADDPGAgent.__name__: MADDPGAgent,
 }
 
 
