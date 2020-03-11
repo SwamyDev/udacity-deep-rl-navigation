@@ -56,6 +56,9 @@ class MADDPGAgent(MemoryAgent):
                                         kwargs.get('gamma', 0.99),
                                         kwargs.get('tau', 1e-3))
 
+        self._preheat_steps = kwargs.get('preheat_steps', 10000)
+        self._step = 0
+
     def _print_config(self):
         logger.info(f"MADDPG configuration:\n"
                     f"\tNumber of agents:\t{self._num_agents}\n"
@@ -63,10 +66,14 @@ class MADDPGAgent(MemoryAgent):
                     f"\tAction Size:\t\t{self._action_size}\n")
 
     def act(self, observation, epsilon=0):
+        if epsilon and self._step < self._preheat_steps:
+            self._step += 1
+            return self.action_space.sample()
+
         action = self._algorithm.estimate(observation.flatten()).reshape(self._num_agents, -1)
         if epsilon:
-            action = epsilon * self.action_space.sample() + (1 - epsilon) * action
-        return action
+            action += epsilon * np.random.randn(*self.action_space.shape)
+        return np.clip(action, -1.0, 1.0)
 
     def train(self):
         if self._memory.is_unfilled():

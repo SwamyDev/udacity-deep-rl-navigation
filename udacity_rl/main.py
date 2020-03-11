@@ -16,7 +16,7 @@ from udacity_rl.agents import DQNAgent, agent_load, agent_save
 from udacity_rl.agents.agent import MultiAgentWrapper
 from udacity_rl.agents.ddpg_agent import DDPGAgent
 from udacity_rl.agents.maddpg_agent import MADDPGAgent
-from udacity_rl.epsilon import EpsilonExpDecay
+from udacity_rl.epsilon import EpsilonExpDecay, NoiseFixed
 
 logger = logging.getLogger(__name__)
 
@@ -120,8 +120,11 @@ def _squeeze_box(box):
 
 def run_train_session(env_fac, agent_fac, episodes, config, max_t, num_agents):
     with environment_session(env_fac, train_mode=True) as env:
-        eps_calc = EpsilonExpDecay(config.get('eps_start', 1), config.get('eps_end', 0.01),
-                                   config.get('eps_decay', 0.995))
+        if 'act_noise_std' in config:
+            eps_calc = NoiseFixed(config['act_noise_std'])
+        else:
+            eps_calc = EpsilonExpDecay(config.get('eps_start', 1), config.get('eps_end', 0.01),
+                                       config.get('eps_decay', 0.995))
         if num_agents == 1:
             agent = agent_fac(env.observation_space, env.action_space, **config)
         else:
