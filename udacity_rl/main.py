@@ -13,7 +13,6 @@ from unityagents import UnityEnvironment
 
 from udacity_rl.adapter import GymAdapter
 from udacity_rl.agents import DQNAgent, agent_load, agent_save
-from udacity_rl.agents.agent import MultiAgentWrapper
 from udacity_rl.agents.ddpg_agent import DDPGAgent
 from udacity_rl.agents.maddpg_agent import MADDPGAgent
 from udacity_rl.epsilon import EpsilonExpDecay, NoiseFixed
@@ -98,10 +97,8 @@ def environment_session(env_factory, *args, **kwargs):
               help="path to store the agent at (default: /tmp/agent_ckpt)")
 @click.option('--max-t', default=None, type=click.INT,
               help="maximum episode steps (default: None)")
-@click.option('-n', '--num-agents', default=1, type=click.INT,
-              help="number of agents for the environment (default: 1)")
 @click.pass_context
-def train(ctx, algorithm, episodes, config, output, max_t, num_agents):
+def train(ctx, algorithm, episodes, config, output, max_t):
     """
     train the agent with the specified algorithm on the environment for the given amount of episodes
     """
@@ -109,7 +106,7 @@ def train(ctx, algorithm, episodes, config, output, max_t, num_agents):
     if config is not None:
         cfg = json.load(config)
 
-    agent, scores = run_train_session(ctx.obj['env_factory'], AgentFactory(algorithm), episodes, cfg, max_t, num_agents)
+    agent, scores = run_train_session(ctx.obj['env_factory'], AgentFactory(algorithm), episodes, cfg, max_t)
     agent_save(agent, Path(output))
     plot_scores(scores)
 
@@ -118,19 +115,14 @@ def _squeeze_box(box):
     return Box(box.low[0][0], box.high[0][0], shape=(box.shape[1],))
 
 
-def run_train_session(env_fac, agent_fac, episodes, config, max_t, num_agents):
+def run_train_session(env_fac, agent_fac, episodes, config, max_t):
     with environment_session(env_fac, train_mode=True) as env:
         if 'act_noise_std' in config:
             eps_calc = NoiseFixed(config['act_noise_std'])
         else:
             eps_calc = EpsilonExpDecay(config.get('eps_start', 1), config.get('eps_end', 0.01),
                                        config.get('eps_decay', 0.995))
-        if num_agents == 1:
-            agent = agent_fac(env.observation_space, env.action_space, **config)
-        else:
-            agents = [agent_fac(_squeeze_box(env.observation_space), _squeeze_box(env.action_space), **config)
-                      for _ in range(num_agents)]
-            agent = MultiAgentWrapper(agents)
+        agent = agent_fac(env.observation_space, env.action_space, **config)
 
         logger.info(f"Epsilon configuration:\n"
                     f"\t{eps_calc}\n")
