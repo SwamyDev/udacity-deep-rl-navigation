@@ -1,9 +1,12 @@
 import json
+import logging
 import pickle
 
 from udacity_rl.agents.dqn_agent import DQNAgent
 from udacity_rl.agents.ddpg_agent import DDPGAgent
 from udacity_rl.agents.maddpg_agent import MADDPGAgent
+
+logger = logging.getLogger(__name__)
 
 _CLASS_MAPPING = {
     DQNAgent.__name__: DQNAgent,
@@ -37,3 +40,17 @@ def agent_load(path):
     agent = _CLASS_MAPPING[agent_type](obs_space, act_space, **cfg)
     agent.load(path)
     return agent
+
+
+class AgentSnapshot:
+    def __init__(self, agent, target_score, path):
+        self._agent = agent
+        self._target = target_score
+        self._path = path
+
+    def new_score(self, score):
+        if self._target is not None and score > self._target:
+            logger.info(f"saving agent ({self._path}) snapshot with score: {score}")
+            agent_save(self._agent, self._path)
+            self._target = score
+            logger.info(f"new save threshold: {self._target}")
