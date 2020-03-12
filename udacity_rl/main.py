@@ -129,8 +129,12 @@ def run_train_session(env_fac, agent_fac, episodes, config, max_t, save_at):
         logger.info(f"Epsilon configuration:\n"
                     f"\t{eps_calc}\n")
 
+        train_frequency = config.get('train_frequency', 4)
+        logger.info(f"Train frequency:\n"
+                    f"\t{train_frequency}\n")
+
         scores = run_session(agent, env, episodes,
-                             train_frequency=config.get('train_frequency', 4),
+                             train_frequency=train_frequency,
                              eps_calc=eps_calc,
                              max_t=max_t,
                              save_at=save_at)

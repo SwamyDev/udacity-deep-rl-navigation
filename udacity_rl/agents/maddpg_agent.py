@@ -43,18 +43,20 @@ class MADDPGAgent(MemoryAgent):
         super().__init__(observation_space, action_space, actor=actor, critic=critic, **kwargs)
 
         self._num_agents = self.observation_space.shape[0]
-        self._observation_size = self._num_agents * self.observation_space.shape[1]
-        self._action_size = self._num_agents * self.action_space.shape[1]
+        self._observation_size = self.observation_space.shape[1]
+        self._action_size = self.action_space.shape[1]
 
         actor = actor or DEFAULT_ACTOR_CFG
         critic = critic or DEFAULT_CRITIC_CFG
 
-        self._algorithm = DDPGAlgorithm(Actor(self._observation_size, self._action_size, **actor),
-                                        Actor(self._observation_size, self._action_size, **actor),
-                                        Critic(self._observation_size, self._action_size, **critic),
-                                        Critic(self._observation_size, self._action_size, **critic),
-                                        kwargs.get('gamma', 0.99),
-                                        kwargs.get('tau', 1e-3))
+        self._algorithms = []
+        for i in range(self._num_agents):
+            self._algorithms.append(DDPGAlgorithm(Actor(self._observation_size, self._action_size, **actor),
+                                                  Actor(self._observation_size, self._action_size, **actor),
+                                                  Critic(self._observation_size, self._action_size, **critic),
+                                                  Critic(self._observation_size, self._action_size, **critic),
+                                                  kwargs.get('gamma', 0.99),
+                                                  kwargs.get('tau', 1e-3)))
 
         self._preheat_steps = kwargs.get('preheat_steps', 10000)
         self._step = 0
@@ -70,7 +72,10 @@ class MADDPGAgent(MemoryAgent):
             self._step += 1
             return self.action_space.sample()
 
-        action = self._algorithm.estimate(observation.flatten()).reshape(self._num_agents, -1)
+        action = np.empty(shape=self.action_space.shape)
+        for i in range(self._num_agents):
+            action[i] = self._algorithms[i].estimate(observation[i])
+
         if epsilon:
             action += epsilon * np.random.randn(*self.action_space.shape)
         return np.clip(action, -1.0, 1.0)
@@ -79,13 +84,16 @@ class MADDPGAgent(MemoryAgent):
         if self._memory.is_unfilled():
             return
 
-        self._algorithm.fit(*self._memory.sample())
-
-    def step(self, obs, action, reward, next_obs, done):
-        super().step(obs.flatten(), action.flatten(), np.mean(reward), next_obs.flatten(), done)
-
+        obs, action, reward, next_obs, done = self._memory.sample()
+        for i in range(self._num_agents):
+            self._algorithms[i].fit(obs[:, i, :], action[:, i, :], reward[:, i], next_obs[:, i, :], done)
+            
     def save(self, save_path):
-        self._algorithm.save_models(save_path)
+        for i in range(self._num_agents):
+            p = save_path / f"mind_{i}"
+            p.mkdir(exist_ok=True)
+            self._algorithms[i].save_models(save_path / f"mind_{i}")
 
     def load(self, save_path):
-        self._algorithm.load_models(save_path)
+        for i in range(self._num_agents):
+            self._algorithms[i].load_models(save_path / f"mind_{i}")
