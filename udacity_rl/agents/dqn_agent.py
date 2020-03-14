@@ -25,7 +25,7 @@ class DQNAgent(MemoryAgent):
 
         self._print_config()
 
-    def _print_config(self):
+    def _print_config(self):  # pragma: no cover
         logger.info(f"DQNAgent configuration:\n"
                     f"\tObservation Size:\t{self._observation_size}\n"
                     f"\tAction Size:\t\t{self._action_size}\n"

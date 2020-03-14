@@ -1,3 +1,4 @@
+import gym
 import pytest
 from pytest import approx
 
@@ -8,7 +9,7 @@ from udacity_rl.epsilon import EpsilonExpDecay
 
 @pytest.fixture
 def random_walk():
-    return GymSession('gym_quickcheck:random-walk-v0', EpsilonExpDecay(1, 0.01, 0.999))
+    return GymSession(gym.make('gym_quickcheck:random-walk-v0'), EpsilonExpDecay(1, 0.01, 0.999))
 
 
 @pytest.fixture

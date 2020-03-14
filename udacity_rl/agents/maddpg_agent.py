@@ -61,7 +61,7 @@ class MADDPGAgent(MemoryAgent):
         self._preheat_steps = kwargs.get('preheat_steps', 10000)
         self._step = 0
 
-    def _print_config(self):
+    def _print_config(self):  # pragma: no cover
         logger.info(f"MADDPG configuration:\n"
                     f"\tNumber of agents:\t{self._num_agents}\n"
                     f"\tObservation Size:\t{self._observation_size}\n"
@@ -87,7 +87,7 @@ class MADDPGAgent(MemoryAgent):
         obs, action, reward, next_obs, done = self._memory.sample()
         for i in range(self._num_agents):
             self._algorithms[i].fit(obs[:, i, :], action[:, i, :], reward[:, i], next_obs[:, i, :], done)
-            
+
     def save(self, save_path):
         for i in range(self._num_agents):
             p = save_path / f"mind_{i}"

@@ -51,7 +51,7 @@ class DDPGAgent(MemoryAgent):
                                         kwargs.get('gamma', 0.99),
                                         kwargs.get('tau', 1e-3))
 
-    def _print_config(self):
+    def _print_config(self):  # pragma: no cover
         logger.info(f"DDPG configuration:\n"
                     f"\tObservation Size:\t{self._observation_size}\n"
                     f"\tAction Size:\t\t{self._action_size}\n")
