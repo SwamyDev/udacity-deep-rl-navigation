@@ -4,3 +4,4 @@ Each Udacity project is accompanied by a report. Each report follows a similar s
 
 - [Project: Navigation](doc/Report_p1_navigation.md)
 - [Project: Continuous Control](doc/Report_p2_continuous.md)
+- [Project: Multi-Agent](doc/Report_p3_multiagent.md)
