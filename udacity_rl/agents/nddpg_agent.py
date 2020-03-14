@@ -38,7 +38,7 @@ DEFAULT_CRITIC_CFG = {
 }
 
 
-class MADDPGAgent(MemoryAgent):
+class NDDPGAgent(MemoryAgent):
     def __init__(self, observation_space, action_space, actor=None, critic=None, **kwargs):
         super().__init__(observation_space, action_space, actor=actor, critic=critic, **kwargs)
 
@@ -62,7 +62,7 @@ class MADDPGAgent(MemoryAgent):
         self._step = 0
 
     def _print_config(self):  # pragma: no cover
-        logger.info(f"MADDPG configuration:\n"
+        logger.info(f"NDDPG configuration:\n"
                     f"\tNumber of agents:\t{self._num_agents}\n"
                     f"\tObservation Size:\t{self._observation_size}\n"
                     f"\tAction Size:\t\t{self._action_size}\n")

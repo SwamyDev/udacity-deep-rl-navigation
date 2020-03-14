@@ -14,7 +14,7 @@ from unityagents import UnityEnvironment
 from udacity_rl.adapter import GymAdapter
 from udacity_rl.agents import DQNAgent, agent_load, agent_save, AgentSnapshot
 from udacity_rl.agents.ddpg_agent import DDPGAgent
-from udacity_rl.agents.maddpg_agent import MADDPGAgent
+from udacity_rl.agents.nddpg_agent import NDDPGAgent
 from udacity_rl.epsilon import EpsilonExpDecay, NoiseFixed
 
 logger = logging.getLogger(__name__)
@@ -41,7 +41,7 @@ class AgentFactory:
     _AGENT_MAPPING = {
         'DQN': DQNAgent,
         'DDPG': DDPGAgent,
-        'MADDPG': MADDPGAgent,
+        'NDDPG': NDDPGAgent,
     }
 
     def __init__(self, algorithm_name):

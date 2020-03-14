@@ -6,7 +6,7 @@ from gym.spaces import Box
 
 from tests.auxiliary import GymSession
 from udacity_rl.agents import agent_save, agent_load
-from udacity_rl.agents.maddpg_agent import MADDPGAgent
+from udacity_rl.agents.nddpg_agent import NDDPGAgent
 from udacity_rl.epsilon import NoiseFixed
 
 
@@ -46,7 +46,7 @@ def n_knob():
 @pytest.fixture
 def make_agent(n_knob):
     def factory(**kwargs):
-        return MADDPGAgent(n_knob.observation_space, n_knob.action_space, **kwargs)
+        return NDDPGAgent(n_knob.observation_space, n_knob.action_space, **kwargs)
 
     return factory
 
