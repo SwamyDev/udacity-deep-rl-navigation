@@ -160,7 +160,7 @@ def run_session(agent, env, episodes, train_frequency=None, eps_calc=None, max_t
                 step += 1
                 if train_frequency is not None and step % train_frequency == 0:
                     agent.train()
-                score += np.mean(reward)
+                score += np.max(reward)
 
             if eps_calc:
                 eps_calc.update()
