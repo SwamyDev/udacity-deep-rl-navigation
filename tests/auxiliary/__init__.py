@@ -52,8 +52,8 @@ def follows_contract(interface=None, properties=None):
 
 
 class GymSession(gym.Wrapper):
-    def __init__(self, gym_id, eps_calc):
-        super().__init__(gym.make(gym_id))
+    def __init__(self, gym_instance, eps_calc):
+        super().__init__(gym_instance)
         self.eps_calc = eps_calc
 
     def test(self, agent, num_episodes=100):

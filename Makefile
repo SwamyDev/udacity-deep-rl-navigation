@@ -60,3 +60,4 @@ test: venv/test_done
 
 coverage: venv/test_done
 	. venv/bin/activate; pytest --cov=udacity_rl --cov-report term-missing tests
+	. venv/bin/activate; pytest --cov=udacity_rl --cov-report term-missing --cov-append --run-reacher tests/test_gym_adapter.py

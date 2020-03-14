@@ -1,3 +1,4 @@
+import gym
 import pytest
 
 from tests.auxiliary import GymSession, train_to_target
@@ -8,7 +9,7 @@ from udacity_rl.epsilon import EpsilonExpDecay
 
 @pytest.fixture
 def n_knob():
-    return GymSession('gym_quickcheck:n-knob-v0', EpsilonExpDecay(1, 0.01, 0.995))
+    return GymSession(gym.make('gym_quickcheck:n-knob-v0'), EpsilonExpDecay(1, 0.01, 0.995))
 
 
 @pytest.fixture

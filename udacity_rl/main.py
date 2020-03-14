@@ -8,12 +8,14 @@ from pathlib import Path
 
 import click
 import gym
+from gym.spaces import Box
 from unityagents import UnityEnvironment
 
 from udacity_rl.adapter import GymAdapter
-from udacity_rl.agents import DQNAgent, agent_load, agent_save
+from udacity_rl.agents import DQNAgent, agent_load, agent_save, AgentSnapshot
 from udacity_rl.agents.ddpg_agent import DDPGAgent
-from udacity_rl.epsilon import EpsilonExpDecay
+from udacity_rl.agents.nddpg_agent import NDDPGAgent
+from udacity_rl.epsilon import EpsilonExpDecay, NoiseFixed
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +41,7 @@ class AgentFactory:
     _AGENT_MAPPING = {
         'DQN': DQNAgent,
         'DDPG': DDPGAgent,
+        'NDDPG': NDDPGAgent,
     }
 
     def __init__(self, algorithm_name):
@@ -94,8 +97,10 @@ def environment_session(env_factory, *args, **kwargs):
               help="path to store the agent at (default: /tmp/agent_ckpt)")
 @click.option('--max-t', default=None, type=click.INT,
               help="maximum episode steps (default: None)")
+@click.option('--save-at', default=None, type=click.FLOAT,
+              help="save at average score greater than specified. No snapshots when None. (default: None)")
 @click.pass_context
-def train(ctx, algorithm, episodes, config, output, max_t):
+def train(ctx, algorithm, episodes, config, output, max_t, save_at):
     """
     train the agent with the specified algorithm on the environment for the given amount of episodes
     """
@@ -103,55 +108,75 @@ def train(ctx, algorithm, episodes, config, output, max_t):
     if config is not None:
         cfg = json.load(config)
 
-    agent, scores = run_train_session(ctx.obj['env_factory'], AgentFactory(algorithm), episodes, cfg, max_t)
+    agent, scores = run_train_session(ctx.obj['env_factory'], AgentFactory(algorithm), episodes, cfg, max_t, save_at)
     agent_save(agent, Path(output))
     plot_scores(scores)
 
 
-def run_train_session(env_fac, agent_fac, episodes, config, max_t):
+def _squeeze_box(box):
+    return Box(box.low[0][0], box.high[0][0], shape=(box.shape[1],))
+
+
+def run_train_session(env_fac, agent_fac, episodes, config, max_t, save_at):
     with environment_session(env_fac, train_mode=True) as env:
-        eps_calc = EpsilonExpDecay(config.get('eps_start', 1), config.get('eps_end', 0.01),
-                                   config.get('eps_decay', 0.995))
+        if 'act_noise_std' in config:
+            eps_calc = NoiseFixed(config['act_noise_std'])
+        else:
+            eps_calc = EpsilonExpDecay(config.get('eps_start', 1), config.get('eps_end', 0.01),
+                                       config.get('eps_decay', 0.995))
         agent = agent_fac(env.observation_space, env.action_space, **config)
 
         logger.info(f"Epsilon configuration:\n"
                     f"\t{eps_calc}\n")
+
+        train_frequency = config.get('train_frequency', 4)
+        logger.info(f"Train frequency:\n"
+                    f"\t{train_frequency}\n")
+
         scores = run_session(agent, env, episodes,
-                             train_frequency=config.get('train_frequency', 4),
+                             train_frequency=train_frequency,
                              eps_calc=eps_calc,
-                             max_t=max_t)
+                             max_t=max_t,
+                             save_at=save_at)
         return agent, scores
 
 
-def run_session(agent, env, episodes, train_frequency=None, eps_calc=None, max_t=None):
+def run_session(agent, env, episodes, train_frequency=None, eps_calc=None, max_t=None, save_at=None):
     step = 0
     scores_last = deque(maxlen=100)
     scores_all = list()
-    for episode in range(episodes):
-        done = False
-        score = 0
-        obs = env.reset()
-        t = 0
-        while not done and (max_t is None or t < max_t):
-            action = agent.act(obs, 0 if eps_calc is None else eps_calc.epsilon)
-            next_obs, reward, done, _ = env.step(action)
-            agent.step(obs, action, reward, next_obs, done)
-            obs = next_obs
-            step += 1
-            if train_frequency is not None and step % train_frequency == 0:
-                agent.train()
-            score += reward
+    snapshot = AgentSnapshot(agent, save_at, Path("/tmp/agent_snapshot"))
+    try:
+        for episode in range(episodes):
+            done = False
+            score = 0
+            obs = env.reset()
+            t = 0
+            while not done and (max_t is None or t < max_t):
+                action = agent.act(obs, 0 if eps_calc is None else eps_calc.epsilon)
+                next_obs, reward, done, _ = env.step(action)
+                agent.step(obs, action, reward, next_obs, done)
+                obs = next_obs
+                step += 1
+                if train_frequency is not None and step % train_frequency == 0:
+                    agent.train()
+                score += np.max(reward)
 
-        if eps_calc:
-            eps_calc.update()
-        scores_last.append(score)
-        scores_all.append(score)
+            if eps_calc:
+                eps_calc.update()
+            scores_last.append(score)
+            scores_all.append(score)
 
-        score_avg = sum(scores_last) / len(scores_last)
-        reward_msg = f"\rEpisodes ({episode}/{episodes})\tAverage reward: {score_avg :.2f}"
-        print(reward_msg, end="")
-        if episode % 100 == 0:
-            print(reward_msg)
+            score_avg = sum(scores_last) / len(scores_last)
+            reward_msg = f"\rEpisodes ({episode}/{episodes})\tAverage reward: {score_avg :.4f}"
+            print(reward_msg, end="")
+
+            if episode % 100 == 0:
+                print(reward_msg)
+                snapshot.new_score(score_avg)
+    except KeyboardInterrupt:
+        pass
+
     return scores_all
 
 
@@ -191,18 +216,23 @@ def moving_average(a, n=3):
 
 
 @cli.command()
+@click.option('-n', '--num', default=1, type=click.INT,
+              help="number (-1 infinite runs) of episodes to explore. (default: 1)")
 @click.pass_context
-def explore(ctx):
+def explore(ctx, num):
     """
     explore the specified environment by logging observation and action spaces and rendering an episode
     """
     with environment_session(ctx.obj['env_factory'], train_mode=False, render=True) as env:
         logger.info(f'Observation space: {env.observation_space}')
         logger.info(f'Action space: {env.action_space}')
-        done = False
-        env.reset()
-        while not done:
-            _, _, done, _ = env.step(env.action_space.sample())
+        e = 0
+        while e < num or num == -1:
+            done = False
+            env.reset()
+            while not done:
+                _, _, done, _ = env.step(env.action_space.sample())
+            e += 1
 
 
 if __name__ == "__main__":
