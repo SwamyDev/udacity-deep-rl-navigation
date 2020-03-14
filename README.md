@@ -1,10 +1,11 @@
 [![Build Status](https://travis-ci.com/SwamyDev/udacity-deep-rl-navigation.svg?branch=master)](https://travis-ci.com/SwamyDev/udacity-deep-rl-navigation) [![Coverage Status](https://coveralls.io/repos/github/SwamyDev/udacity-deep-rl-navigation/badge.svg?branch=master)](https://coveralls.io/github/SwamyDev/udacity-deep-rl-navigation?branch=master)
 # Udacity Projects
 
-This repository is part of the Udacity Reinforcement Learning Nanodegree. It contains solutions to the courses class projects `navigation` and `continuous control`. You can find more detailed explanations for each project and their environments in their dedicated README or Report files:
+This repository is part of the Udacity Reinforcement Learning Nanodegree. It contains solutions to the courses class projects `navigation`, `continuous control` and `multi-agent`. You can find more detailed explanations for each project and their environments in their dedicated README or Report files:
 
 - [Project Navigation](doc/README_p1_navigation.md)
 - [Project Continuous Control](doc/README_p2_continuous.md) 
+- [Project Mulit-Agent](doc/README_p3_multiagent.md) 
  
 ## Installation
 To run the code of the projects you need to install the repositories virtual environment. To make this as easy as possible I provide a `Makefile` using `GNU Make` to set up virtual environments and download dependencies. It requires a Linux environment. Under Ubuntu make is part of the `build-essential` package (`apt install build-essential`). Other dependencies are python3 virutalenv (`apt install python3-venv`) and pip (`apt install python3-pip`).
