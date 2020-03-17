@@ -4,7 +4,7 @@ import numpy as np
 
 from gym import spaces
 
-from udacity_rl.memory import Memory
+from udacity_rl.memory import Memory, UniformReplayBuffer
 
 
 def with_default(cfg, key, default):
@@ -95,18 +95,15 @@ class Agent(AgentInterface, abc.ABC):
 def _with_mem_defaults(cfg):
     cfg = with_default(cfg, 'batch_size', 64)
     cfg = with_default(cfg, 'record_size', int(1e5))
+    cfg = with_default(cfg, 'seed', None)
     return cfg
-
-
-def _only_memory_args(mem_cfg):
-    return {k: mem_cfg[k] for k in mem_cfg if k in Memory.__init__.__code__.co_varnames}
 
 
 class MemoryAgent(Agent, abc.ABC):
     def __init__(self, observation_space, action_space, **kwargs):
         super().__init__(observation_space, action_space, **kwargs)
         mem_cfg = _with_mem_defaults(kwargs)
-        self._memory = Memory(**_only_memory_args(mem_cfg))
+        self._memory = Memory(mem_cfg["batch_size"], UniformReplayBuffer(mem_cfg["record_size"], mem_cfg["seed"]))
 
     def step(self, obs, action, reward, next_obs, done):
         if not isinstance(action, (collections.Sequence, np.ndarray)):

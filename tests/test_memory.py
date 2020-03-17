@@ -1,13 +1,13 @@
 import numpy as np
 import pytest
 
-from udacity_rl.memory import Memory, MemoryRecordError
+from udacity_rl.memory import Memory, MemoryRecordError, UniformReplayBuffer
 
 
 @pytest.fixture
 def make_memory():
     def factory(batch_size=64, record_size=10000, num_records=0, seed=None):
-        m = Memory(batch_size, record_size, seed)
+        m = Memory(batch_size, UniformReplayBuffer(record_size, seed))
         for index in range(num_records):
             m.record(index=index)
         return m
@@ -25,7 +25,7 @@ def test_memory_is_initially_empty(memory):
 
 
 def test_sampling_empty_memory_returns_empty_list(memory):
-    assert memory.sample() == []
+    assert memory.sample() == ([], None)
 
 
 def test_recording_experience_increases_length(memory):
@@ -38,11 +38,11 @@ def test_recording_experience_increases_length(memory):
 @pytest.mark.parametrize('batch_size', (1, 3))
 def test_sampling_memory_returns_list_of_experiences_if_enough_records_to_fill_a_batch(make_memory, batch_size):
     memory = make_memory(batch_size, num_records=batch_size)
-    assert sorted(memory.sample()) == sorted([np.array([index]) for index in range(batch_size)])
+    assert sorted(memory.sample()[0]) == sorted([np.array([index]) for index in range(batch_size)])
 
 
 def test_sampling_memory_returns_empty_list_if_not_enough_records_to_fill_a_batch(make_memory):
-    assert make_memory(batch_size=2, num_records=1).sample() == []
+    assert make_memory(batch_size=2, num_records=1).sample() == ([], None)
 
 
 def test_is_unfilled_indicated_whether_batch_is_incomplete_or_not(make_memory):
@@ -51,8 +51,8 @@ def test_is_unfilled_indicated_whether_batch_is_incomplete_or_not(make_memory):
 
 
 def test_sample_randomly_from_record_if_record_exceeds_batch_size(make_memory):
-    assert (make_memory(batch_size=2, num_records=10, seed=17).sample() !=
-            make_memory(batch_size=2, num_records=10, seed=42).sample()).any()
+    assert (make_memory(batch_size=2, num_records=10, seed=17).sample()[0] !=
+            make_memory(batch_size=2, num_records=10, seed=42).sample()[0]).any()
 
 
 def test_record_has_fixed_length(make_memory):
@@ -92,7 +92,7 @@ def test_recording_different_attributes_raises_error(memory):
 
 def test_sampling_memory_returns_numpy_arrays(make_memory):
     memory = make_memory(batch_size=2, num_records=2)
-    sample = memory.sample()
+    sample, _ = memory.sample()
     assert isinstance(sample, np.ndarray)
 
 
