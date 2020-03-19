@@ -38,7 +38,7 @@ class UniformReplayBuffer(ReplayBuffer):
         self._record.append(data)
 
     def sample(self, size):
-        return random.sample(self._record, k=size), None
+        return random.sample(self._record, k=size)
 
     def __len__(self):
         return len(self._record)
@@ -66,13 +66,13 @@ class Memory:
 
     def sample(self):
         if self.is_unfilled():
-            return [], None
+            return []
 
-        sample, info = self._buffer.sample(self._batch_size)
+        sample = self._buffer.sample(self._batch_size)
         if len(sample[0]) > 1:
             return self._cast_to_ndarray_tuple(list(zip(*sample)))
 
-        return np.array(sample), info
+        return np.array(sample)
 
     @staticmethod
     def _cast_to_ndarray_tuple(attributes):
