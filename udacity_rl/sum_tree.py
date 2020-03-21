@@ -47,10 +47,12 @@ class SumLeaf(SumNode):
     def query(self, segment):
         return self
 
-    def update(self, new_value, data):
+    def update(self, new_value, data=None):
+        if data is not None:
+            self.data = data
+
         change = new_value - self.value
         self.value = new_value
-        self.data = data
         if self.parent:
             self.parent.propagate(change)
 
@@ -75,6 +77,10 @@ class SumTree:
 
     def __len__(self):
         return self._size
+
+    @property
+    def capacity(self):
+        return self._capacity
 
     @property
     def total(self):

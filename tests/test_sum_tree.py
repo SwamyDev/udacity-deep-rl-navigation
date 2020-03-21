@@ -32,7 +32,7 @@ def test_tree_with_a_single_value_has_correct_size_and_total(tree):
 def test_tree_with_n_values_has_correct_size_and_total(tree):
     tree.add(10, "A")
     tree.add(5, "B")
-    tree.add(12, "B")
+    tree.add(12, "C")
     assert len(tree) == 3
     assert tree.total == 27
 
@@ -67,3 +67,12 @@ def test_tree_reaches_maximum_capacity(tree):
     assert_node(tree.query(0.0), 14, "D")
     assert_node(tree.query(14.0), 5, "B")
     assert_node(tree.query(19.0), 12, "C")
+
+
+def test_updating_leaf_without_data_just_updates_value(tree):
+    tree.add(10, "A")
+    tree.add(5, "B")
+    tree.query(0.0).update(7.0)
+    assert_node(tree.query(6.9), 7, "A")
+    assert_node(tree.query(7.0), 5, "B")
+    assert tree.total == 12

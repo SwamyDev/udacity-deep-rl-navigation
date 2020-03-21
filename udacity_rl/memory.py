@@ -5,6 +5,8 @@ from collections import deque
 
 import numpy as np
 
+from udacity_rl.sum_tree import SumTree
+
 logger = logging.getLogger(__name__)
 
 
@@ -14,7 +16,7 @@ class ReplayBuffer(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def sample(self, size):
+    def sample(self, size, **kwargs):
         pass
 
     @abc.abstractmethod
@@ -37,11 +39,60 @@ class UniformReplayBuffer(ReplayBuffer):
     def append(self, data):
         self._record.append(data)
 
-    def sample(self, size):
+    def sample(self, size, _=None):
         return random.sample(self._record, k=size)
 
     def __len__(self):
         return len(self._record)
+
+
+def calc_priority(td_error, alpha, epsilon=0.1):
+    return (np.abs(td_error) + epsilon) ** alpha
+
+
+class PrioritizedReplayBuffer(ReplayBuffer):
+    TD_ERROR_IDX = -1
+
+    def __init__(self, record_size, seed=None):
+        self._sum_tree = SumTree(record_size)
+        if seed is not None:
+            random.seed(seed)
+
+        self._print_config()
+
+    def _print_config(self):
+        logger.info(f"Prioritized Replay Buffer:\n"
+                    f"\tRecord size:\t{self._sum_tree.capacity}\n")
+
+    def append(self, data):
+        self._sum_tree.add(data[self.TD_ERROR_IDX], data[:self.TD_ERROR_IDX])
+
+    def sample(self, size, beta=0.5):
+        batch = []
+        weights = []
+        sum_p = self._sum_tree.total
+        n_tree = len(self._sum_tree)
+        max_w = 0
+
+        segment = sum_p / size
+        for i in range(size):
+            s = random.uniform(segment * i, segment * (i + 1))
+            leaf = self._sum_tree.query(s)
+
+            w = np.power(n_tree * (leaf.value / sum_p), -beta)
+            if w > max_w:
+                max_w = w
+
+            weights.append(w)
+            batch.append(leaf.data + (leaf,))
+
+        for i in range(size):
+            batch[i] += tuple([weights[i] / max_w])
+
+        return batch
+
+    def __len__(self):
+        return len(self._sum_tree)
 
 
 class Memory:
@@ -64,11 +115,11 @@ class Memory:
                                     f"expected: {self._keys}\nactual:{keys}")
         self._buffer.append(tuple(kwargs[k] for k in kwargs))
 
-    def sample(self):
+    def sample(self, **kwargs):
         if self.is_unfilled():
             return []
 
-        sample = self._buffer.sample(self._batch_size)
+        sample = self._buffer.sample(self._batch_size, **kwargs)
         if len(sample[0]) > 1:
             return self._cast_to_ndarray_tuple(list(zip(*sample)))
 
