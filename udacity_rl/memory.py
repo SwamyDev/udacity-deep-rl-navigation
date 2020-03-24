@@ -51,7 +51,7 @@ def calc_priority(td_error, alpha, epsilon=0.1):
 
 
 class PrioritizedReplayBuffer(ReplayBuffer):
-    TD_ERROR_IDX = -1
+    PRIORITY_INDEX = -1
 
     def __init__(self, record_size, seed=None):
         self._sum_tree = SumTree(record_size)
@@ -65,7 +65,7 @@ class PrioritizedReplayBuffer(ReplayBuffer):
                     f"\tRecord size:\t{self._sum_tree.capacity}\n")
 
     def append(self, data):
-        self._sum_tree.add(data[self.TD_ERROR_IDX], data[:self.TD_ERROR_IDX])
+        self._sum_tree.add(data[self.PRIORITY_INDEX], data[:self.PRIORITY_INDEX])
 
     def sample(self, size, beta=0.5):
         batch = []

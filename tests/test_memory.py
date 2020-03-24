@@ -166,6 +166,12 @@ def test_updating_leaf_changes_priority(make_priority):
     assert_distribution(actual_dist, np.array([100, 1, 1]) / 102)
 
 
+def test_updating_leaf_returns_new_priority(make_priority):
+    memory = make_priority(batch_size=1, num_records=3, td_error=[1] * 3)
+    _, leafs, _ = memory.sample()
+    assert leafs[0].update(100) == 100
+
+
 def test_alpha_value_controls_priority_behaviour(make_priority):
     memory = make_priority(batch_size=1, num_records=3, td_error=[1, 100, 10], alpha=0)
     assert_distribution(determine_memory_distribution(memory), np.repeat(1 / 3, repeats=3))
@@ -177,7 +183,7 @@ def test_alpha_value_controls_priority_behaviour(make_priority):
 def test_priority_replay_buffer_calculates_corrective_weight(make_priority):
     memory = make_priority(batch_size=3, num_records=3, td_error=[30, 50, 20])
     weights = get_full_sample_weights(memory, beta=1)
-    assert_weights(weights, np.array([0.4, 2/3, 1.0]))
+    assert_weights(weights, np.array([0.4, 2 / 3, 1.0]))
     weights = get_full_sample_weights(memory, beta=0)
     assert_weights(weights, np.array([1.0, 1.0, 1.0]))
     weights = get_full_sample_weights(memory, beta=0.5)

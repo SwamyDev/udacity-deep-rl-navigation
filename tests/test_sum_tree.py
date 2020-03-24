@@ -13,16 +13,6 @@ def test_is_initially_empty(tree):
     assert tree.total == 0
 
 
-def test_raise_an_index_error_when_querying_out_of_bounds(tree):
-    with pytest.raises(SumTree.SegmentOutOfBoundsError):
-        tree.query(0)
-
-    tree.add(10, "A")
-
-    with pytest.raises(SumTree.SegmentOutOfBoundsError):
-        tree.query(10.1)
-
-
 def test_tree_with_a_single_value_has_correct_size_and_total(tree):
     tree.add(10, "A")
     assert len(tree) == 1
@@ -35,7 +25,6 @@ def test_tree_with_n_values_has_correct_size_and_total(tree):
     tree.add(12, "C")
     assert len(tree) == 3
     assert tree.total == 27
-
 
 def test_tree_queries_first_segment(tree):
     tree.add(10, "A")
@@ -67,6 +56,16 @@ def test_tree_reaches_maximum_capacity(tree):
     assert_node(tree.query(0.0), 14, "D")
     assert_node(tree.query(14.0), 5, "B")
     assert_node(tree.query(19.0), 12, "C")
+
+
+def test_return_right_most_value_when_overshooting(tree):
+    tree.add(10, "A")
+    tree.add(5, "B")
+    assert_node(tree.query(15.1), 5, "B")
+    tree.add(12, "C")
+    assert_node(tree.query(27.1), 12, "C")
+    tree.add(15, "D")
+    assert_node(tree.query(42.1), 15, "D")
 
 
 def test_updating_leaf_without_data_just_updates_value(tree):

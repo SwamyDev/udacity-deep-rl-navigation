@@ -56,6 +56,8 @@ class SumLeaf(SumNode):
         if self.parent:
             self.parent.propagate(change)
 
+        return self.value
+
 
 class SumTree:
     Node = SumNode
@@ -88,7 +90,7 @@ class SumTree:
 
     def query(self, segment):
         if segment >= self.total:
-            raise self.SegmentOutOfBoundsError(f"The requested segment {segment} is out of bounds ({self.total})")
+            return self._leafs[self._cursor - 1]
 
         return self._root.query(segment)
 

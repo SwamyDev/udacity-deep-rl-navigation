@@ -168,6 +168,6 @@ class Critic(Model):
     def __call__(self, observations, actions):
         return self._ann(observations, actions)
 
-    def fit(self, observations, actions, targets):
-        critic_loss = F.mse_loss(self(observations, actions), targets)
+    def fit(self, predictions, targets):
+        critic_loss = F.mse_loss(predictions, targets)
         self.minimize(critic_loss)
